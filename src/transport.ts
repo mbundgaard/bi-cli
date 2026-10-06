@@ -1,0 +1,60 @@
+import http, { type IncomingHttpHeaders } from 'node:http';
+import https from 'node:https';
+import { gunzipSync, inflateSync, brotliDecompressSync } from 'node:zlib';
+import { CliError, Exit } from './output.js';
+
+export interface HttpRequest {
+  url: string; method: string; headers?: Record<string, string>;
+  body?: string; timeoutMs?: number;
+}
+export interface HttpResponse { status: number; headers: IncomingHttpHeaders; body: Buffer }
+export function validateUrl(input: string): URL {
+  let url: URL;
+  try { url = new URL(input); } catch { throw new CliError(Exit.usage, 'Expected an absolute HTTP(S) URL'); }
+  const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+  if ((url.protocol !== 'https:' && !(url.protocol === 'http:' && loopback)) || url.username || url.password || url.hash) {
+    throw new CliError(Exit.usage, 'URL must use HTTPS without credentials or a fragment (HTTP is allowed only on loopback for local tests)');
+  }
+  return url;
+}
+
+// No redirects, no retries, no JSON parsing. Buffered bytes avoid printing partial
+// responses as if complete when a socket fails. Body decoding only undoes HTTP compression.
+export async function request(input: HttpRequest): Promise<HttpResponse> {
+  const url = validateUrl(input.url);
+  if (!Number.isFinite(input.timeoutMs ?? 30_000) || (input.timeoutMs ?? 30_000) <= 0) throw new CliError(Exit.usage, 'Timeout must be positive');
+  return new Promise((resolve, reject) => {
+    const headers = { 'User-Agent': 'BiCli-TypeScript/0.1', 'Accept-Encoding': 'identity', ...input.headers };
+    const client = url.protocol === 'https:' ? https : http;
+    const req = client.request(url, { method: input.method, headers, rejectUnauthorized: true }, res => {
+      const chunks: Buffer[] = [];
+      res.on('data', chunk => chunks.push(Buffer.from(chunk)));
+      res.on('error', reject);
+      res.on('aborted', () => reject(new Error('Response interrupted; request outcome may be uncertain')));
+      res.on('end', () => {
+        try {
+          let body = Buffer.concat(chunks);
+          const encoding = res.headers['content-encoding']?.toLowerCase();
+          // HEAD/204/304 have no message body. Their encoding headers describe
+          // a representation, not bytes available for decompression here.
+          const noBody = input.method.toUpperCase() === 'HEAD' || res.statusCode === 204 || res.statusCode === 304;
+          if (noBody) body = Buffer.alloc(0);
+          else if (encoding === 'gzip') body = gunzipSync(body);
+          else if (encoding === 'deflate') body = inflateSync(body);
+          else if (encoding === 'br') body = brotliDecompressSync(body);
+          else if (encoding && encoding !== 'identity') throw new Error(`Unsupported content encoding: ${encoding}`);
+          resolve({ status: res.statusCode ?? 0, headers: res.headers, body });
+        } catch (error) { reject(error); }
+      });
+    });
+    const timer = setTimeout(() => req.destroy(new Error('HTTP request timed out; write outcome may be uncertain')), input.timeoutMs ?? 30_000);
+    req.on('close', () => clearTimeout(timer));
+    req.on('error', reject);
+    req.end(input.body);
+  });
+}
+export function httpExit(status: number): number {
+  if (status >= 200 && status < 300) return Exit.ok;
+  if (status === 401) return Exit.auth;
+  return Exit.api;
+}

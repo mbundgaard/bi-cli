@@ -1,0 +1,11 @@
+import type { Area } from './types.js';
+import area0 from './aggregations.js';
+import area1 from './cash-management.js';
+import area2 from './fiscal-transactions.js';
+import area3 from './kitchen-performance.js';
+import area4 from './labor.js';
+import area5 from './payment-dimensions.js';
+import area6 from './payment-transactions.js';
+import area7 from './pos-dimensions.js';
+import area8 from './pos-transactions.js';
+export const areas: readonly Area[] = [area0, area1, area2, area3, area4, area5, area6, area7, area8];
