@@ -64,30 +64,36 @@ for (const rotated of [true, false]) test(`refresh is password-free, persists ID
   await s.store.mutate(async state => { state.tokens = tokens(); });
   const result = await s.run(['auth', 'refresh']);
   assert.equal(result.code, 0, result.stderr); assert.equal(s.calls.length, 1);
-  assert.equal(JSON.parse(result.stdout).data.refreshTokenRotated, rotated);
+  assert.equal(JSON.parse(result.stdout).data.companies[0].status, 'refreshed');
   const saved = await s.store.load(); assert.equal(saved.tokens.idToken, 'new-synthetic-id');
   assert.equal(saved.tokens.refreshToken, rotated ? 'new-synthetic-refresh' : 'synthetic-refresh');
   assert.doesNotMatch(result.stdout + result.stderr, /new-synthetic-id|new-synthetic-refresh|unused-access/);
 });
-for (const status of [302, 400, 401, 500]) test(`refresh HTTP ${status} is not retried or followed; existing state remains intact`, async t => {
+for (const status of [302, 400, 401, 500]) test(`refresh HTTP ${status} is not retried or followed; tokens survive with one-hour backoff`, async t => {
   const s = await setup(t, (_, res) => { res.writeHead(status, { Location: '/do-not-follow' }); res.end(JSON.stringify({ code: 'AUTHENTICATION_INVALID', message: 'SECRET-ECHO', pwdResetToken: 'RESET-SECRET' })); });
   await s.store.mutate(async state => { state.tokens = tokens(); });
-  const before = await readFile(s.store.file, 'utf8');
+  const before = (await s.store.load()).tokens;
+  const start = Date.now();
   const result = await s.run(['auth', 'refresh']);
-  assert.equal(result.code, 9); assert.equal(s.calls.length, 1); assert.equal(result.stdout, '');
+  assert.equal(result.code, 9); assert.equal(s.calls.length, 1); assert.equal(JSON.parse(result.stdout).data.companies[0].status, 'failed');
   assert.doesNotMatch(result.stderr, /SECRET-ECHO|RESET-SECRET|password requires changing/);
-  assert.equal(await readFile(s.store.file, 'utf8'), before);
+  assert.deepEqual((await s.store.load()).tokens, before);
+  const registry = await s.store.loadCompanies();
+  assert.ok(Date.parse(registry.companies[registry.activeCompany].refreshAfter) >= start + 3600000);
 });
 for (const response of [
   { access_token: 'not-a-bi-token', refresh_token: 'secret', expires_in: 100 },
   { id_token: 'secret', refresh_token: 'secret', expires_in: 'not-a-number' },
   { id_token: 'secret', refresh_token: 'secret', expires_in: -1 },
-]) test('invalid token responses fail closed and do not expose token values', async t => {
+]) test('missing ID tokens fail closed; invalid expiry never loses rotated credentials or exposes tokens', async t => {
   const s = await setup(t, (_, res) => res.end(JSON.stringify(response)));
   await s.store.mutate(async state => { state.tokens = tokens(); });
-  const before = await readFile(s.store.file, 'utf8');
-  const result = await s.run(['auth', 'refresh']); assert.equal(result.code, 9);
-  assert.doesNotMatch(result.stderr, /secret|not-a-bi-token/); assert.equal(await readFile(s.store.file, 'utf8'), before);
+  const before = (await s.store.load()).tokens;
+  const result = await s.run(['auth', 'refresh']); assert.equal(result.code, response.id_token ? 0 : 9);
+  assert.doesNotMatch(result.stdout + result.stderr, /secret|not-a-bi-token/);
+  const saved = (await s.store.load()).tokens;
+  if (response.id_token) { assert.equal(saved.refreshToken, 'secret'); assert.equal(saved.expiresIn, undefined); }
+  else assert.deepEqual(saved, before);
 });
 test('malformed auth JSON does not leak parser excerpts', async t => {
   const s = await setup(t, (_, res) => res.end('secret-response-not-json'));

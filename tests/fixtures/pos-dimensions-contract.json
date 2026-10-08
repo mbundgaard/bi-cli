@@ -1,0 +1,381 @@
+{
+  "source": "https://docs.oracle.com/en/industries/food-beverage/back-office/20.1/biapi/swagger.json",
+  "version": "2025.09.22",
+  "sourceSha256": "ca16ae423d03a81d5aa6316f530f09e9de0e7cd64d53679ea4fa287d80da2ec9",
+  "endpoints": [
+    {
+      "path": "/bi/v1/{orgIdentifier}/getLatestBusDt",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getLocationDimensions",
+      "method": "POST",
+      "schema": "locDimRequestPayload",
+      "required": [],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getRevenueCenterDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getDiscountDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getServiceChargeDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getTenderMediaDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getOrderTypeDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getOrderChannelDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getTaxDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getJobCodeDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getCashManagementItemDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getReasonCodeDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getCashierDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getMenuItemDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getMenuItemPrices",
+      "method": "POST",
+      "schema": "mnprRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "effFrDt": {
+          "type": "string",
+          "format": "date"
+        },
+        "effToDt": {
+          "type": "string",
+          "format": "date"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getEmployeeDimensions",
+      "method": "POST",
+      "schema": "locRequestPayload",
+      "required": [
+        "locRef"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string"
+        },
+        "searchCriteria": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    }
+  ]
+}

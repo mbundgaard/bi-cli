@@ -3,11 +3,12 @@
 Oracle Simphony Business Intelligence CLI, aligned with the Muneris STS CLI.
 Node.js 22+, TypeScript, Windows/macOS/Linux.
 
-**Current status: authentication-first scaffold.** PKCE login, explicit refresh and
-private per-user state are implemented and tested offline. Fresh BI login and a
-subsequent refresh have also been verified against Oracle on Windows. BI data
-queries and their permissions have not been tested or implemented. This package
-is private/unpublished. No STS configuration, credentials or token state are copied.
+**Current status: authentication and POS dimensions implemented.** PKCE login,
+refresh and private per-user state were tested offline and against Oracle on
+Windows. Multi-company management, scheduled renewal and update notices now mirror
+STS, with offline validation; these new BI flows have not yet been live-tested. All 16 POS-dimension queries are implemented and returned HTTP 200 in
+live scoped testing at one location. The other eight data areas remain planned.
+This package is private/unpublished. No STS configuration, credentials or token state are copied.
 
 ## Local setup
 
@@ -42,11 +43,28 @@ bi auth status
 bi auth refresh
 ```
 
-These are placeholders, not default endpoints. `--api-url` is saved for future BI
-queries; login/refresh only contact the configured `--auth-url`. The password is
+These are placeholders, not default endpoints. Data queries use `--api-url`;
+login/refresh only contact the configured `--auth-url`. The password is
 used for login only, never saved. Arguments may be visible in shell history/process
-listings. Refresh needs no password and saves rotated tokens atomically. No automatic
-refresh, retries or redirects. TLS verification cannot be disabled.
+listings. Refresh needs no password and saves rotated tokens atomically. There are
+no data retries or redirects. TLS verification cannot be disabled.
+
+```sh
+bi company list
+bi company select "<enterpriseShortname>@<authHostname>"
+bi company delete "<enterpriseShortname>@<authHostname>"
+```
+
+Company keys use the explicit shortname and lowercase auth hostname. Select/delete
+require an exact key; deleting the active entry clears selection without guessing
+another. Successful login saves and selects its company; failed login preserves
+profiles. Configuration prepares the next login without changing active tokens.
+A matching company/hostname/username reports existing tokens instead of logging in again.
+
+Before data calls, all due profiles are renewed: success schedules +24 hours,
+failure +1 hour while retaining still-valid tokens. Known-expired token sets are
+removed without refresh; new login is required. Manual `bi auth refresh` checks all
+profiles now, bypassing cooldown. No daemon; help/local/dry-run commands stay offline.
 
 **BI uses `id_token` as its Bearer token, not `access_token`.** The client ID is opaque
 and preserved exactly. Unlike STS, BI documentation does not guarantee that decoding
@@ -66,6 +84,18 @@ OS permissions and use disk encryption.
 
 See [Authentication](docs/AUTHENTICATION.md) for recovery and troubleshooting.
 
+## Update notices
+
+Successful non-quiet data calls check npm at most once per 24 hours, with a 1-second
+network timeout. A newer version produces a short stderr notice; API output and exit
+codes remain unchanged. Failures stay silent, and no update installs automatically.
+`--quiet` skips the check. Help/local/auth/dry-run commands do not check automatically.
+
+`bi version --check` performs an explicit advisory lookup with a 5-second timeout.
+BI remains private/unpublished: an unavailable npm lookup is not proof it is up to
+date. Review the installation method and ask before updating; this feature does not
+authorize publication or copy any STS credentials.
+
 ## Nine task areas
 
 | Command group | Oracle terminology |
@@ -80,11 +110,24 @@ See [Authentication](docs/AUTHENTICATION.md) for recovery and troubleshooting.
 | `bi pos-dimensions` | Point of Sale Dimensions |
 | `bi pos-transactions` | Transactions |
 
-Each area has its own source module and help entry. These groups currently display
-help only and do not query Oracle. `bi endpoints` explicitly reports no implemented
-data endpoints. Planned BI queries use POST for reads; POST does not imply a business
-write. Future implementation will preserve response bytes on stdout, including errors,
-and send diagnostics to stderr, following the STS contract.
+Each area has its own source module and help entry. POS dimensions implements all
+16 documented calls; the other groups currently display help only. `bi endpoints`
+lists implemented requests and scopes. BI uses POST for reads; POST does not imply
+a business write. API data remains verbatim: small bodies go directly to stdout;
+bodies exceeding **16 KiB or 500 lines** are saved privately and stdout returns a
+small JSON file reference. This is automatic, with no output-mode flags. Diagnostics
+go to stderr and API error exit codes remain unchanged. See
+[Response delivery](docs/RESPONSES.md) for agent/script handling and file retention.
+
+```sh
+bi pos-dimensions revenue-centers list --loc-ref "<location-reference>"
+bi pos-dimensions menu-items list --loc-ref "<location-reference>" --dry-run
+bi pos-dimensions locations list --all-locations --include locations.locRef
+```
+
+`--all-locations` explicitly permits organization-wide discovery; it must not be
+used under location-only authorization. No location is guessed. See
+[POS dimensions](docs/POS-DIMENSIONS.md) for all commands, JSON input, filters and price dates.
 
 [Commands](docs/CLI.md) | [Development](docs/DEVELOPMENT.md) |
 [Contributing](CONTRIBUTING.md) | [Security](SECURITY.md)

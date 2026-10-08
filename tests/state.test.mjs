@@ -55,7 +55,7 @@ test('failed rename retains a complete synced rotated-token recovery copy', asyn
   assert.deepEqual(await store.load(), old);
   const files = await fs.readdir(store.directory); const recovery = files.filter(file => file.endsWith('.tmp'));
   assert.equal(recovery.length, 1); assert.ok(!files.some(file => file.endsWith('.lock')));
-  const file = path.join(store.directory, recovery[0]); assert.equal(JSON.parse(await fs.readFile(file, 'utf8')).tokens.refreshToken, 'rotated-synthetic');
+  const file = path.join(store.directory, recovery[0]); assert.equal(JSON.parse(await fs.readFile(file, 'utf8')).pending.tokens.refreshToken, 'rotated-synthetic');
   if (process.platform !== 'win32') assert.equal((await fs.stat(file)).mode & 0o777, 0o600);
 });
 for (const failure of ['writeFile', 'sync']) test(`failed ${failure} cleans incomplete state copies`, async t => {

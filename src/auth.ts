@@ -56,8 +56,10 @@ export class AuthClient {
     const refreshToken = typeof value.refresh_token === 'string' && value.refresh_token ? value.refresh_token : priorRefresh;
     if (!refreshToken) throw new CliError(Exit.auth, 'IDM response did not contain a refresh_token');
     const seconds = typeof value.expires_in === 'string' && /^\d+$/.test(value.expires_in) ? Number(value.expires_in) : value.expires_in;
-    if (typeof seconds !== 'number' || !Number.isSafeInteger(seconds) || seconds <= 0 || !Number.isFinite(new Date(Date.now() + seconds * 1000).getTime())) throw new CliError(Exit.auth, 'IDM returned an invalid token lifetime');
-    return { idToken: value.id_token, refreshToken, codeVerifier: verifier, obtainedAt: new Date().toISOString(), expiresIn: seconds };
+    const knownLifetime = typeof seconds === 'number' && Number.isSafeInteger(seconds) && seconds >= 0 && Number.isFinite(new Date(Date.now() + seconds * 1000).getTime());
+    // Preserve rotated credentials even when optional expiry metadata is unusable.
+    if (!knownLifetime && !this.quiet) process.stderr.write('[auth] Token expiry is unknown; credentials will be saved without guessing a lifetime.\n');
+    return { idToken: value.id_token, refreshToken, codeVerifier: verifier, obtainedAt: new Date().toISOString(), expiresIn: knownLifetime ? seconds as number : undefined };
   }
   async login(auth: AuthConfig, password: string): Promise<TokenSet> {
     if (!password) throw new CliError(Exit.usage, 'Supply --password (used for login only)');

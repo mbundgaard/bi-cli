@@ -15,7 +15,7 @@ function npmCommand(args) {
 }
 try {
   const [packed] = JSON.parse(npmCommand(['pack', '--ignore-scripts', '--json', '--pack-destination', temp]));
-  const allow = new Set(['README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md', 'SECURITY.md', 'package.json', 'bin/bi.js', 'docs/CLI.md', 'docs/AUTHENTICATION.md', 'docs/DEVELOPMENT.md']);
+  const allow = new Set(['README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md', 'SECURITY.md', 'package.json', 'bin/bi.js', 'docs/CLI.md', 'docs/AUTHENTICATION.md', 'docs/DEVELOPMENT.md', 'docs/POS-DIMENSIONS.md', 'docs/RESPONSES.md']);
   for (const file of packed.files) assert.ok(allow.has(file.path) || /^dist\/(?:areas\/)?[a-z-]+\.(?:js|d\.ts)$/.test(file.path), `Unexpected package file: ${file.path}`);
   npmCommand(['install', '--prefix', temp, '--ignore-scripts', '--no-audit', '--no-fund', path.join(temp, packed.filename)]);
   const shim = path.join(temp, 'node_modules', '.bin', process.platform === 'win32' ? 'bi.cmd' : 'bi');
@@ -25,6 +25,12 @@ try {
   const version = execute(['--version']); assert.equal(version.status, 0, version.stderr); assert.equal(version.stdout.trim(), pkg.version);
   const help = execute(['auth', 'login', '--help']); assert.equal(help.status, 0, help.stderr); assert.match(help.stdout, /--password/);
   const rootHelp = execute(['--help']); assert.equal(rootHelp.status, 0); assert.doesNotMatch(rootHelp.stdout, /--state-dir|--insecure/);
+  const dimensionsHelp = execute(['pos-dimensions', 'locations', 'list', '--help']);
+  assert.equal(dimensionsHelp.status, 0, dimensionsHelp.stderr);
+  assert.match(dimensionsHelp.stdout, /--all-locations/); assert.match(dimensionsHelp.stdout, /--dry-run/);
+  assert.match(dimensionsHelp.stdout, /check npm daily/);
+  const companyHelp = execute(['company', '--help']); assert.equal(companyHelp.status, 0); assert.match(companyHelp.stdout, /select/);
+  const updateHelp = execute(['version', '--help']); assert.equal(updateHelp.status, 0); assert.match(updateHelp.stdout, /--check/);
   const invalid = execute(['invalid-command']); assert.equal(invalid.status, 6); assert.equal(invalid.stdout, '');
   // State checks use installed modules and an isolated store, never real user data.
   const module = name => pathToFileURL(path.join(temp, 'node_modules/@muneris/bi-cli/dist', name)).href;
@@ -34,5 +40,44 @@ try {
      process.exitCode = await main(['node','bi','auth','status'], new StateStore(${JSON.stringify(path.join(temp, 'state'))}));`
   ], { encoding: 'utf8' });
   assert.equal(status.status, 0, status.stderr); assert.equal(JSON.parse(status.stdout).data.state, 'no-tokens');
-  console.log(`${packed.filename}: ${packed.files.length} allowlisted files; installed shim/help/version/parser and isolated state verified.`);
+  const preview = spawnSync(process.execPath, ['--input-type=module', '-e',
+    `import { main } from ${JSON.stringify(module('cli.js'))};
+     import { StateStore } from ${JSON.stringify(module('state.js'))};
+     const store = new StateStore(${JSON.stringify(path.join(temp, 'preview-state'))});
+     await store.save({schemaVersion:1,auth:{orgName:'synthetic',apiUrl:'https://reports.example.invalid'}});
+     process.exitCode = await main(['node','bi','pos-dimensions','locations','list','--all-locations','--dry-run'], store);`
+  ], { encoding: 'utf8' });
+  assert.equal(preview.status, 0, preview.stderr);
+  assert.equal(JSON.parse(preview.stdout).data.authorizationOmitted, true);
+  assert.equal(JSON.parse(preview.stdout).data.scope, 'organization-wide');
+  const delivery = spawnSync(process.execPath, ['--input-type=module', '-e',
+    `import http from 'node:http';
+     import { main } from ${JSON.stringify(module('cli.js'))};
+     import { StateStore } from ${JSON.stringify(module('state.js'))};
+     const server = http.createServer((req,res) => { req.resume(); res.end(Buffer.alloc(20000,120)); });
+     await new Promise(resolve => server.listen(0,'127.0.0.1',resolve));
+     try {
+       const store = new StateStore(${JSON.stringify(path.join(temp, 'delivery-state'))});
+       await store.save({schemaVersion:1,auth:{orgName:'synthetic',apiUrl:'http://127.0.0.1:'+server.address().port,authUrl:'http://127.0.0.1:'+server.address().port,clientId:'opaque-synthetic',username:'Synthetic_User'},
+         tokens:{idToken:'synthetic-id',refreshToken:'synthetic-refresh',codeVerifier:'a'.repeat(43),obtainedAt:new Date().toISOString(),expiresIn:3600}});
+       process.exitCode = await main(['node','bi','pos-dimensions','menu-items','list','--loc-ref','synthetic','--quiet'],store);
+     } finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }`
+  ], { encoding: 'utf8', timeout: 30000 });
+  assert.equal(delivery.status, 0, delivery.stderr);
+  const receipt = JSON.parse(delivery.stdout);
+  assert.equal(receipt.delivery, 'file'); assert.equal(receipt.bytes, 20000);
+  assert.ok(receipt.path.startsWith(path.join(temp, 'delivery-state') + path.sep));
+  assert.deepEqual(readFileSync(receipt.path), Buffer.alloc(20000, 120));
+  const notice = spawnSync(process.execPath, ['--input-type=module', '-e',
+    `import { notifyForUpdates } from ${JSON.stringify(module('updates.js'))};
+     const directory = ${JSON.stringify(path.join(temp, 'update-state'))};
+     let calls = 0;
+     const check = async () => { calls++; return { updateAvailable: true, latestVersion: '99.0.0' }; };
+     await notifyForUpdates(directory, ${JSON.stringify(pkg.version)}, check);
+     await notifyForUpdates(directory, ${JSON.stringify(pkg.version)}, check);
+     if (calls !== 1) throw Error('Expected one daily lookup');`
+  ], { encoding: 'utf8', timeout: 10000 });
+  assert.equal(notice.status, 0, notice.stderr); assert.equal(notice.stdout, '');
+  assert.match(notice.stderr, /99\.0\.0 is available/);
+  console.log(`${packed.filename}: ${packed.files.length} allowlisted files; installed shim/help/version/parser, isolated state, dry-run, automatic file delivery and daily update notice verified.`);
 } finally { rmSync(temp, { recursive: true, force: true }); }

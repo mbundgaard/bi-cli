@@ -13,17 +13,29 @@ node bin/bi.js --help
 
 - `bin/bi.js`: executable npm entry point.
 - `src/cli.ts`: commands and auth orchestration.
-- `src/auth.ts`: Oracle PKCE, cookie preservation, ID tokens, explicit refresh.
-- `src/state.ts`: fixed user paths, BI schema, locking, atomic persistence/recovery.
+- `src/auth.ts`: Oracle PKCE, cookie preservation, ID tokens, refresh without losing rotated credentials on unknown expiry.
+- `src/state.ts`: fixed user paths, BI-only schema-2 registry, schema-1 migration,
+  coherent single-profile views, locking and atomic persistence/recovery.
+- `src/companies.ts`: exact-key commands, duplicate-safe login, expiry removal and
+  per-profile renewal schedules (+24h success, +1h failure).
+- `src/updates.ts`: advisory npm lookup and daily post-success stderr notices;
+  separate reservation file, no credential sharing or automatic installation.
 - `src/transport.ts`: verified TLS, bounded request timeouts, byte-preserving transport;
   no redirects, retries or response JSON interpretation.
 - `src/output.ts`: local JSON and exit codes.
+- `src/responses.ts`: the single data delivery boundary. Up to 16 KiB and 500 lines
+  stays inline; larger decoded bodies stream to private files and produce receipts.
+  No response JSON parsing, agent detection, mode switch or automatic deletion.
+- `src/requests.ts`: BI JSON input, field/scope validation and byte-preserving execution.
+- `src/json.ts`: source-aware request JSON parsing; preserve exact number values.
+- `src/query-commands.ts`: POS-dimension commands, examples and help.
 - `src/areas/`: one module for each of the nine Oracle task areas, plus typed registry.
 - `tests/`: synthetic local mocks; the unpackaged runner injects an isolated StateStore.
 - `scripts/package-smoke.mjs`: package allowlist and actual installed shim checks.
 
 The package is explicitly private while scaffold work is underway. No remote, release,
-update/feedback service or publishing workflow is assumed. CI configuration validates
+feedback service or publishing workflow is assumed. Update lookup targets only the
+BI package on npm; unavailable is expected until a real release exists. CI configuration validates
 Windows/macOS/Linux with Node 22/24; that is not proof those remote jobs have run.
 Provider-owned catalog publication should follow STS once there is a real BI release.
 
@@ -36,16 +48,44 @@ Provider-owned catalog publication should follow STS once there is a real BI rel
 - Token response bodies/reset tokens may contain secrets even on failure; allowlist diagnostics.
 - No live account/POS/data testing until exact credentials, scope and operations are approved.
 
-Future work: implement the nine areas separately using Oracle's JSON POST query contracts,
-not STS endpoint builders. Explicit location/date selection, `searchCriteria` and `include`
-need endpoint-specific validation. Preserve unknown request fields and numeric precision.
+POS dimensions now implements 16 read-only JSON POST endpoints, checked against Oracle's
+Swagger version 2025.09.22. `tests/fixtures/pos-dimensions-contract.json` is a public
+request-schema subset with source URL/hash, excluded from the package. It verifies
+registry coverage and differences between location, ordinary and price request schemas.
+Full Swagger is a reference, not a runtime dependency or a source of invented defaults.
+
+Future work: implement the remaining eight areas separately using their BI contracts,
+not STS endpoint builders. Preserve unknown request fields and numeric precision.
 Distinguish business dates from UTC change cursors. Never turn a location-scoped request
-into organization-wide discovery or silently query every date/location.
+into organization-wide discovery or silently query every date/location. Search expressions
+are forwarded unchanged; current live tests require the guide's where-prefixed form.
+
+## Company orchestration
+
+Request builders consume one BI profile, never the full registry. The execution
+wrapper captures the active key, reads input once, validates before any network,
+maintains all due profiles, then rebuilds with the same key's latest coherent profile.
+Keep location scope, opaque client IDs, exact JSON numbers and ID-token selection.
+
+Config stages login without replacing profiles. Successful login saves/selects its
+key; same-key/username duplicates report expiry. Recheck renewal after locking and
+persist each company separately. Keep save failures outside the Oracle-failure catch,
+so local persistence errors never become a one-hour retry event. Known-expired token
+sets are removed without refresh; unknown expiry remains unknown and is not renewed.
+Schema 2 has an explicit BI product marker; reject STS registries and token fields.
+
+Automatic update checks run after successful non-quiet delivery with a 1-second
+network timeout and separate daily reservation. They never affect BI output/exit codes.
+Unpackaged test runners inject a disabled notifier; updater tests inject synthetic
+registry responses. Help/local/auth/dry-run and failed data calls must not trigger it.
 
 ## Tests and package checks
 
 All current tests run offline against loopback servers and temporary state. Package checks
 may fetch dependencies from npm, but never contact Oracle or read the real user's tokens.
+Large-response tests verify 128 MiB plain/compressed streams, hashes, boundaries,
+error exit codes, cancellation, storage failures and private-file cleanup. Auth stays
+on its internal buffered parsing path, never the data export path.
 Only help/version/parser checks use the production installed shim; stateful integration
 tests use internal injection. Keep test fixtures synthetic and outside the package.
 

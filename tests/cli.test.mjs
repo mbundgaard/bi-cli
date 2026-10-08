@@ -5,14 +5,17 @@ import path from 'node:path';
 import { areas } from '../dist/areas/index.js';
 import { setup, tokens, clientId } from './helpers.mjs';
 
-test('nine areas retain Oracle terminology and are help-only scaffolds', async t => {
+test('nine areas retain Oracle terminology; POS dimensions are implemented and the others are planned', async t => {
   assert.deepEqual(areas.map(a => a.name), ['aggregations', 'cash-management', 'fiscal-transactions', 'kitchen-performance', 'labor', 'payment-dimensions', 'payment-transactions', 'pos-dimensions', 'pos-transactions']);
   const s = await setup(t);
   for (const area of areas) {
     const result = await s.run([area.name, '--help']); assert.equal(result.code, 0);
-    assert.ok(result.stdout.includes(area.oracleName)); assert.match(result.stdout, /not implemented/);
+    assert.ok(result.stdout.includes(area.oracleName));
+    if (area.name === 'pos-dimensions') assert.match(result.stdout, /16 BI JSON POST queries/);
+    else assert.match(result.stdout, /not implemented/);
   }
-  const endpoints = await s.run(['endpoints']); assert.deepEqual(JSON.parse(endpoints.stdout).data.dataEndpoints, []);
+  const endpoints = await s.run(['endpoints']);
+  assert.equal(JSON.parse(endpoints.stdout).data.dataEndpoints.length, 16);
   assert.equal((await s.run(['pos-transactions', 'guest-checks'])).code, 6);
   assert.equal(s.calls.length, 0);
 });
@@ -25,7 +28,7 @@ test('configuration uses explicit BI organization and preserves opaque client ID
   assert.equal(saved.auth.username, 'CasePreserved'); assert.equal(saved.tokens, undefined);
   assert.equal(s.calls.length, 0);
 });
-test('identical settings keep saved tokens; changed endpoints clear them', async t => {
+test('identical settings keep saved tokens; changed endpoints prepare token-free login configuration', async t => {
   const s = await setup(t); await s.store.mutate(async state => { state.tokens = tokens(); });
   assert.equal((await s.run(['auth', 'config', '--client-id', clientId])).code, 0);
   assert.ok((await s.store.load()).tokens);
@@ -42,10 +45,13 @@ test('status and show never print token values and status is explicitly local-on
   assert.equal(s.calls.length, 0);
 });
 test('invalid flags/configuration and missing credentials fail locally without touching tokens', async t => {
-  const s = await setup(t); await s.store.mutate(async state => { state.tokens = tokens(); });
+  const s = await setup(t);
+  assert.equal((await s.run(['auth', 'login'])).code, 6);
+  assert.equal((await s.run(['auth', 'login', '--password', ''])).code, 6);
+  await s.store.mutate(async state => { state.tokens = tokens(); });
   const before = await readFile(s.store.file, 'utf8');
   for (const args of [
-    ['auth', 'login'], ['auth', 'login', '--password', ''], ['auth', 'refresh', '--timeout', 'NaN'],
+    ['auth', 'refresh', '--timeout', 'NaN'],
     ['auth', 'config', '--auth-url', 'http://idm.example.invalid'],
     ['auth', 'config', '--auth-url', 'https://secret@example.invalid'],
     ['auth', 'config', '--api-url', 'https://example.invalid/?query=x'],

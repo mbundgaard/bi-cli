@@ -9,10 +9,18 @@ export interface AuthConfig {
   authUrl?: string; apiUrl?: string; clientId?: string; orgName?: string; username?: string;
 }
 export interface TokenSet {
-  idToken: string; refreshToken: string; codeVerifier: string; obtainedAt: string; expiresIn: number;
+  idToken: string; refreshToken: string; codeVerifier: string; obtainedAt: string; expiresIn?: number;
 }
+// Builders consume a single BI profile, never the company registry.
 export interface State { schemaVersion: 1; auth: AuthConfig; tokens?: TokenSet }
+export interface Company extends State { refreshAfter?: string }
+export interface CompanyState {
+  schemaVersion: 2; product: 'bi'; activeCompany: string | null;
+  companies: Record<string, Company>; pending?: State;
+}
+export const DAY = 86_400_000, HOUR = 3_600_000;
 export const emptyState = (): State => ({ schemaVersion: 1, auth: {} });
+export const emptyCompanies = (): CompanyState => ({ schemaVersion: 2, product: 'bi', activeCompany: null, companies: {} });
 export function stateDirectory(home = os.homedir()): string {
   if (process.platform === 'win32') return path.join(home, 'AppData', 'Roaming', 'BiCli');
   if (process.platform === 'darwin') return path.join(home, 'Library', 'Application Support', 'BiCli');
@@ -27,8 +35,14 @@ function object(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 function fail(message: string): never { throw new CliError(Exit.state, message); }
+function timestamp(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,7})?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/.test(value) || !Number.isFinite(Date.parse(value))) return false;
+  const [year, month, day] = value.slice(0, 10).split('-').map(Number);
+  const lastDay = new Date(0); lastDay.setUTCFullYear(year!, month!, 0);
+  return month! >= 1 && month! <= 12 && day! >= 1 && day! <= lastDay.getUTCDate();
+}
 export function validateState(value: unknown): State {
-  if (!object(value) || value.schemaVersion !== 1 || !object(value.auth)) fail('Expected BI state schemaVersion 1 with an auth object; STS state cannot be imported');
+  if (!object(value) || value.schemaVersion !== 1 || !object(value.auth)) fail('Expected a BI profile with schemaVersion 1 and an auth object; STS state cannot be imported');
   if (Object.keys(value).some(key => !['schemaVersion', 'auth', 'tokens'].includes(key))) fail('Unknown BI state field');
   const keys = ['authUrl', 'apiUrl', 'clientId', 'orgName', 'username'];
   if (Object.keys(value.auth).some(key => !keys.includes(key))) fail('Unknown auth field; passwords must never be saved');
@@ -47,71 +61,124 @@ export function validateState(value: unknown): State {
     for (const key of ['idToken', 'refreshToken', 'codeVerifier', 'obtainedAt']) {
       if (typeof value.tokens[key] !== 'string' || !value.tokens[key]) fail(`Missing or invalid tokens.${key}`);
     }
-    const time = Date.parse(value.tokens.obtainedAt as string);
-    const seconds = value.tokens.expiresIn;
-    if (!Number.isFinite(time) || typeof seconds !== 'number' || !Number.isSafeInteger(seconds) || seconds <= 0 || !Number.isFinite(new Date(time + seconds * 1000).getTime())) fail('Invalid token lifetime');
+    const time = Date.parse(value.tokens.obtainedAt as string), seconds = value.tokens.expiresIn;
+    if (!timestamp(value.tokens.obtainedAt as string) || (seconds !== undefined && (typeof seconds !== 'number' || !Number.isSafeInteger(seconds) || seconds < 0 || !Number.isFinite(new Date(time + seconds * 1000).getTime())))) fail('Invalid token lifetime');
     if (!/^[A-Za-z0-9._~-]{43,128}$/.test(value.tokens.codeVerifier as string)) fail('Invalid saved PKCE verifier');
   }
   return value as unknown as State;
 }
+export function companyKey(auth: AuthConfig): string {
+  if (!auth.orgName?.trim() || !auth.authUrl) throw new CliError(Exit.notConfigured, 'Enterprise shortname and auth URL are required to identify a BI company');
+  return `${auth.orgName}@${new URL(baseUrl(auth.authUrl)).hostname.toLowerCase()}`;
+}
+function scheduleLegacy(profile: Company): void {
+  if (profile.tokens && profile.refreshAfter === undefined) profile.refreshAfter = new Date(Date.parse(profile.tokens.obtainedAt) + DAY).toISOString();
+}
+export function validateCompanies(value: unknown): CompanyState {
+  if (!object(value)) fail('Invalid BI company state');
+  if (value.schemaVersion === 1) {
+    const legacy = validateState(value), registry = emptyCompanies();
+    if (legacy.auth.orgName && legacy.auth.authUrl) {
+      const key = companyKey(legacy.auth), profile: Company = { ...legacy };
+      scheduleLegacy(profile); registry.companies[key] = profile; registry.activeCompany = key;
+    } else registry.pending = legacy;
+    return registry;
+  }
+  if (value.schemaVersion !== 2 || value.product !== 'bi' || !object(value.companies) || (value.activeCompany !== null && typeof value.activeCompany !== 'string')) fail('Invalid BI company registry; STS state cannot be imported');
+  if (Object.keys(value).some(key => !['schemaVersion', 'product', 'activeCompany', 'companies', 'pending'].includes(key))) fail('Unknown BI registry field');
+  for (const [key, item] of Object.entries(value.companies)) {
+    if (!object(item)) fail('Invalid BI company profile');
+    const { refreshAfter, ...snapshot } = item;
+    const profile = validateState(snapshot);
+    if (companyKey(profile.auth) !== key) fail('Company key does not match its enterprise shortname/auth hostname');
+    if (refreshAfter !== undefined && (typeof refreshAfter !== 'string' || !timestamp(refreshAfter))) fail('Invalid refreshAfter timestamp');
+    scheduleLegacy(item as unknown as Company);
+  }
+  if (value.activeCompany !== null && !Object.hasOwn(value.companies, value.activeCompany as string)) fail('Active company is absent from the registry');
+  if (value.pending !== undefined) validateState(value.pending);
+  return value as unknown as CompanyState;
+}
+export function activeState(registry: CompanyState): Company {
+  if (!registry.activeCompany) throw new CliError(Exit.notConfigured, 'No active BI company; log in or use bi company select <exact-key>');
+  return registry.companies[registry.activeCompany]!;
+}
+function configurationState(registry: CompanyState): State {
+  const profile = registry.pending ?? (registry.activeCompany ? activeState(registry) : emptyState());
+  const { refreshAfter: _schedule, ...state } = profile as Company;
+  return state;
+}
 export class StateStore {
   readonly file: string;
   constructor(readonly directory = stateDirectory()) { this.file = path.join(directory, 'BiCli.json'); }
-  async load(): Promise<State> {
-    let text: string;
-    try { text = await readFile(this.file, 'utf8'); }
+  async loadCompanies(): Promise<CompanyState> {
+    try { return validateCompanies(JSON.parse((await readFile(this.file, 'utf8')).replace(/^\uFEFF/, ''))); }
     catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return emptyState();
-      throw new CliError(Exit.state, `Cannot read BI state at ${this.file}; it has not been overwritten`);
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return emptyCompanies();
+      throw new CliError(Exit.state, `Cannot read BI state at ${this.file}; invalid or inaccessible state`, 'Repair from a protected backup; state has not been overwritten.');
     }
-    let value: unknown;
-    try { value = JSON.parse(text.replace(/^\uFEFF/, '')); }
-    catch { throw new CliError(Exit.state, `Invalid JSON in BI state at ${this.file}; repair from a protected backup`); }
-    return validateState(value);
   }
+  async load(): Promise<State> { return configurationState(await this.loadCompanies()); }
+  // Internal snapshot helpers preserve sibling profiles. CLI changes use locked mutations.
   async save(state: State): Promise<void> {
-    validateState(state);
+    const incoming = validateCompanies(state), registry = await this.loadCompanies();
+    if (incoming.activeCompany) {
+      registry.companies[incoming.activeCompany] = incoming.companies[incoming.activeCompany]!;
+      registry.activeCompany = incoming.activeCompany; delete registry.pending;
+    } else registry.pending = incoming.pending;
+    await this.saveCompanies(registry);
+  }
+  async saveCompanies(registry: CompanyState): Promise<void> {
+    validateCompanies(registry);
     const temp = `${this.file}.${randomUUID()}.tmp`;
     let complete = false;
     try {
       await mkdir(this.directory, { recursive: true, mode: 0o700 });
       const handle = await open(temp, 'wx', 0o600);
-      try { await handle.writeFile(JSON.stringify(state, null, 2) + '\n'); await handle.sync(); complete = true; }
+      try { await handle.writeFile(JSON.stringify(registry, null, 2) + '\n'); await handle.sync(); complete = true; }
       finally { await handle.close(); }
       await rename(temp, this.file);
     } catch {
       throw new CliError(Exit.state, `Cannot save BI state at ${this.file}`,
         complete ? `Complete recovery copy: ${temp}. Tokens may already have rotated. Do not retry login/refresh using old state. Repair filesystem access, then use bi auth restore --file "${temp}" --force. Keep the copy private.` : 'No complete recovery copy was written. If Oracle issued tokens, resolve the state failure before further auth operations.');
-    } finally {
-      if (!complete) await unlink(temp).catch(() => {});
-    }
+    } finally { if (!complete) await unlink(temp).catch(() => {}); }
   }
-  async mutate<T>(run: (state: State) => Promise<T>): Promise<T> {
+  async mutateCompanies<T>(run: (registry: CompanyState) => Promise<T>): Promise<T> {
     const file = `${this.file}.lock`;
     let lock;
-    try {
-      await mkdir(this.directory, { recursive: true, mode: 0o700 });
-      lock = await open(file, 'wx', 0o600);
-    } catch { throw new CliError(Exit.state, `Cannot lock BI state; inspect ${file} before removing a stale lock`); }
+    try { await mkdir(this.directory, { recursive: true, mode: 0o700 }); lock = await open(file, 'wx', 0o600); }
+    catch { throw new CliError(Exit.state, `Cannot lock BI state; inspect ${file} before removing a stale lock`); }
     try {
       await lock.writeFile(JSON.stringify({ pid: process.pid, startedAt: new Date().toISOString() }));
-      const state = await this.load();
-      const result = await run(state);
-      await this.save(state);
-      return result;
+      const registry = await this.loadCompanies(), result = await run(registry);
+      await this.saveCompanies(registry); return result;
     } finally { await lock.close(); await unlink(file); }
   }
+  async mutate<T>(run: (state: State) => Promise<T>): Promise<T> {
+    return this.mutateCompanies(async registry => {
+      const state = configurationState(registry), result = await run(state);
+      if (registry.pending || !registry.activeCompany) {
+        const migrated = validateCompanies(state);
+        if (migrated.activeCompany) {
+          const key = migrated.activeCompany; registry.companies[key] = migrated.companies[key]!; registry.activeCompany = key; delete registry.pending;
+        } else registry.pending = state;
+      } else {
+        if (companyKey(state.auth) !== registry.activeCompany) throw new CliError(Exit.usage, 'Use auth config/login to change company identity');
+        const prior = registry.companies[registry.activeCompany]!;
+        registry.companies[registry.activeCompany] = { ...state, ...(prior.refreshAfter ? { refreshAfter: prior.refreshAfter } : {}) };
+      }
+      return result;
+    });
+  }
 }
-export function tokenSummary(tokens?: TokenSet) {
-  const expiresAt = tokens ? new Date(Date.parse(tokens.obtainedAt) + tokens.expiresIn * 1000).toISOString() : undefined;
-  const secondsRemaining = expiresAt ? Math.floor((Date.parse(expiresAt) - Date.now()) / 1000) : undefined;
+export function tokenSummary(tokens?: TokenSet, now = Date.now()) {
+  const expiresAt = tokens?.obtainedAt && tokens.expiresIn !== undefined ? new Date(Date.parse(tokens.obtainedAt) + tokens.expiresIn * 1000).toISOString() : undefined;
+  const secondsRemaining = expiresAt ? Math.floor((Date.parse(expiresAt) - now) / 1000) : undefined;
   return { hasIdToken: !!tokens?.idToken, hasRefreshToken: !!tokens?.refreshToken,
     obtainedAt: tokens?.obtainedAt, expiresIn: tokens?.expiresIn, expiresAt, secondsRemaining,
-    expired: secondsRemaining === undefined ? undefined : secondsRemaining <= 0 };
+    expired: expiresAt === undefined ? undefined : Date.parse(expiresAt) <= now };
 }
-// Future BI request builders must use this helper, never access_token.
 export function bearerToken(state: State): string {
   if (!state.tokens?.idToken) throw new CliError(Exit.noTokens, 'No BI ID token saved; run bi auth login');
-  if (tokenSummary(state.tokens).expired) throw new CliError(Exit.auth, 'BI ID token expired; run bi auth refresh explicitly');
+  if (tokenSummary(state.tokens).expired) throw new CliError(Exit.auth, 'BI ID token expired; run bi auth login');
   return state.tokens.idToken;
 }

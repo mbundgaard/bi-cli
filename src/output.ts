@@ -9,7 +9,7 @@ export class CliError extends Error {
   }
 }
 
-// Local commands have a stable envelope. Future BI response bytes bypass this entirely.
+// Local commands have a stable envelope. Data delivery is centralized in responses.ts.
 export function localResult(command: string, data: unknown): void {
   process.stdout.write(JSON.stringify({ ok: true, command, data }, null, 2) + '\n');
 }
