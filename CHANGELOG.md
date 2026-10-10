@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- Implement seven POS-transaction read-only POST commands: guest checks, non-sales,
+  journal logs, waste, check/line-item extensibility and SPI payments. Require explicit
+  location and date, preserve unknown fields and exact numbers, and validate native
+  selectors/cursors without defaults or automatic date/location loops.
+- Require exactly one guest-check date despite Swagger's contradictory required list.
+  Distinguish cloud-change and transaction-time cursors, forwarding UTC spelling and
+  fractions unchanged; no cursor persistence, polling, aggregation or reconciliation.
+- Share pinned-company renewal, one-read JSON/file/stdin input, response delivery and
+  update notices across dimensions/transactions. Add schema, selector, error, package
+  and 128 MiB plain/compressed transaction-stream tests. Authorized scoped live reads
+  covered all seven endpoints; empty line-item extensibility leaves its populated-data
+  behavior unverified. No publication was performed.
+- Document live compatibility: offsetless UTC seconds/fractions accepted, trailing Z
+  rejected by all four cursor endpoints, inclusive non-sales/waste cursor boundaries,
+  and nested guest-check predicates retaining nonmatching sibling lines. Preserve
+  caller input and Oracle output; never normalize/retry a rejected cursor or locally
+  prune returned child arrays. Add synthetic regressions for those guarantees.
+
 - Mirror STS company management with BI-specific identity: explicit enterprise
   shortname plus lowercase auth hostname, opaque client IDs and ID tokens only.
   Add exact-key list/status/select/delete, active-only logout, schema-1 migration
@@ -23,7 +41,7 @@
   These changes do not authorize or claim new live BI testing or publication.
 
 - Scaffold TypeScript/Node CLI with nine Oracle BI task areas and daily/quarter-hour
-  aggregation subdivisions; eight areas remain planned.
+  aggregation subdivisions; seven areas remain planned after adding transactions.
 - Implement all 16 POS-dimension read-only POST calls, explicit location/all-location
   scope, Oracle search/projection, menu-price dates, JSON/file/stdin input and dry-run.
   Preserve raw response bytes and exact request numbers; no data retries or redirects.

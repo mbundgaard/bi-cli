@@ -1,0 +1,258 @@
+{
+  "source": "https://docs.oracle.com/en/industries/food-beverage/back-office/20.1/biapi/swagger.json",
+  "version": "2025.09.22",
+  "sourceSha256": "ca16ae423d03a81d5aa6316f530f09e9de0e7cd64d53679ea4fa287d80da2ec9",
+  "guestCheckRequiredDiscrepancy": "Oracle lists all three dates as required, but each field description forbids the other two. CLI requires exactly one.",
+  "endpoints": [
+    {
+      "path": "/bi/v1/{orgIdentifier}/getGuestChecks",
+      "method": "POST",
+      "schema": "gstChkRequestPayload",
+      "required": [
+        "locRef",
+        "opnBusDt",
+        "clsdBusDt",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "maxLength": 99
+        },
+        "clsdBusDt": {
+          "type": "string",
+          "format": "date"
+        },
+        "opnBusDt": {
+          "type": "string",
+          "format": "date"
+        },
+        "busDt": {
+          "type": "string",
+          "format": "date"
+        },
+        "clsdGuestChecksOnly": {
+          "type": "boolean"
+        },
+        "changedSinceUTC": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "rvcNum": {
+          "type": "integer",
+          "maxLength": 10
+        },
+        "searchCriteria": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getNonSalesTransactions",
+      "method": "POST",
+      "schema": "nonSlsRequestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "format": "date"
+        },
+        "transSinceUTC": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getPOSJournalLogDetails",
+      "method": "POST",
+      "schema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getPOSWasteDetails",
+      "method": "POST",
+      "schema": "POSWasteDetailsrequestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "transSinceUTC": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "locRef": {
+          "type": "string",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getGuestCheckExtensibilityDetails",
+      "method": "POST",
+      "schema": "gstChkExtRequestPayload",
+      "required": [
+        "locRef",
+        "opnBusDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "maxLength": 99
+        },
+        "opnBusDt": {
+          "type": "string",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getGuestCheckLineItemExtDetails",
+      "method": "POST",
+      "schema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getSPIPaymentDetails",
+      "method": "POST",
+      "schema": "spiPaymentDetailsrequestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "format": "date"
+        },
+        "changedSinceUTC": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "include": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "searchCriteria": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    }
+  ]
+}

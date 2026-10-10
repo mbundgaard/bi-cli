@@ -9,6 +9,7 @@
 | `bi version --check` | Explicit advisory npm lookup; never installs |
 | `bi endpoints` | Local registry of implemented paths/methods/scopes and planned areas |
 | `bi pos-dimensions <noun> <list|get>` | 16 read-only POST endpoints; see [POS dimensions](POS-DIMENSIONS.md) |
+| `bi pos-transactions <noun> list` | Seven read-only location/date-scoped POST endpoints; see [POS transactions](POS-TRANSACTIONS.md) |
 | `bi auth status` | Local configuration presence and ID-token expiry summary |
 | `bi auth show` | Local saved configuration plus token presence, never token values |
 | `bi auth config` | Prepare the next login without changing saved profiles/tokens |
@@ -55,9 +56,8 @@ No Oracle credentials, cookies or customer data are sent to npm.
 ## Scaffolded only
 
 `aggregations` (`daily`, `quarter-hour`), `cash-management`, `fiscal-transactions`,
-`kitchen-performance`, `labor`, `payment-dimensions`, `payment-transactions`,
-`pos-transactions`. Use `<group> --help` for scope and Oracle names.
-These eight planned groups send no data requests. Unimplemented operations fail as usage errors.
+`kitchen-performance`, `labor`, `payment-dimensions`, `payment-transactions`. Use `<group> --help` for scope and Oracle names.
+These seven planned groups send no data requests. Unimplemented operations fail as usage errors.
 
 ## Output and exit codes
 

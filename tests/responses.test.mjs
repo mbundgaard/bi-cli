@@ -198,7 +198,8 @@ test('failed partial-file cleanup is reported, never hidden as completed output'
   } finally { t.mock.restoreAll(); syncBuiltinESMExports(); await collector.discard(); }
 });
 
-for (const gzip of [false, true]) test(`128 MiB ${gzip ? 'compressed' : 'plain'} response streams to disk with exact hash and small stdout`, { timeout: 90000 }, async t => {
+for (const operationArgs of [args, ['pos-transactions', 'guest-checks', 'list', '--loc-ref', 'synthetic', '--business-date', '2024-02-29']])
+for (const gzip of [false, true]) test(`${operationArgs[0]}: 128 MiB ${gzip ? 'compressed' : 'plain'} response streams to disk with exact hash and small stdout`, { timeout: 90000 }, async t => {
   const block = Buffer.alloc(64 * 1024, 120), count = 2048;
   const hash = createHash('sha256'); for (let i = 0; i < count; i++) hash.update(block);
   const s = await authorized(t, async (_, res) => {
@@ -209,7 +210,7 @@ for (const gzip of [false, true]) test(`128 MiB ${gzip ? 'compressed' : 'plain'}
   });
   const script = `import {main} from './dist/cli.js'; import {StateStore} from './dist/state.js';
     const before=process.memoryUsage().rss;
-    process.exitCode=await main(['node','bi',...${JSON.stringify(args)},'--quiet','--timeout','60'],new StateStore(${JSON.stringify(s.directory)}));
+    process.exitCode=await main(['node','bi',...${JSON.stringify(operationArgs)},'--quiet','--timeout','60'],new StateStore(${JSON.stringify(s.directory)}));
     console.error(JSON.stringify({before,after:process.memoryUsage().rss,peak:process.resourceUsage().maxRSS*1024}));`;
   const child = spawn(process.execPath, ['--input-type=module', '-e', script]);
   let stdout = '', stderr = ''; child.stdout.on('data', b => { stdout += b; }); child.stderr.on('data', b => { stderr += b; });

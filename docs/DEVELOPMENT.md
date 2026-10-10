@@ -29,12 +29,15 @@ node bin/bi.js --help
 - `src/requests.ts`: BI JSON input, field/scope validation and byte-preserving execution.
 - `src/json.ts`: source-aware request JSON parsing; preserve exact number values.
 - `src/query-commands.ts`: POS-dimension commands, examples and help.
+- `src/transaction-commands.ts`, `src/transaction-requests.ts`: transaction commands,
+  explicit date/cursor/native-selector validation, shared query execution.
 - `src/areas/`: one module for each of the nine Oracle task areas, plus typed registry.
 - `tests/`: synthetic local mocks; the unpackaged runner injects an isolated StateStore.
 - `scripts/package-smoke.mjs`: package allowlist and actual installed shim checks.
 
-The package is explicitly private while scaffold work is underway. No remote, release,
-feedback service or publishing workflow is assumed. Update lookup targets only the
+The package remains private/unpublished. Source is in the private
+`mbundgaard/bi-cli` GitHub repository. No release, feedback service or publishing
+workflow is authorized by implementation work. Update lookup targets only the
 BI package on npm; unavailable is expected until a real release exists. CI configuration validates
 Windows/macOS/Linux with Node 22/24; that is not proof those remote jobs have run.
 Provider-owned catalog publication should follow STS once there is a real BI release.
@@ -54,7 +57,17 @@ request-schema subset with source URL/hash, excluded from the package. It verifi
 registry coverage and differences between location, ordinary and price request schemas.
 Full Swagger is a reference, not a runtime dependency or a source of invented defaults.
 
-Future work: implement the remaining eight areas separately using their BI contracts,
+POS transactions implements seven read-only POST calls against the same Swagger.
+Its public request-schema fixture records the contradictory guest-check required-date
+list; enforce exactly one date per field descriptions. Cursor spelling/precision is
+preserved without local-time conversion. Scoped live results and limitations are
+recorded in [POS transactions](POS-TRANSACTIONS.md): recommend offsetless UTC, never
+silently strip a rejected Z suffix, and never locally prune returned sibling lines.
+Tests for these behaviors use wholly synthetic fixtures, not captured customer data.
+Both areas use `executeQuery` for pinned-company renewal, one input read, response
+delivery and update notices; never duplicate that lifecycle in a new endpoint.
+
+Future work: implement the remaining seven areas separately using their BI contracts,
 not STS endpoint builders. Preserve unknown request fields and numeric precision.
 Distinguish business dates from UTC change cursors. Never turn a location-scoped request
 into organization-wide discovery or silently query every date/location. Search expressions
@@ -83,7 +96,7 @@ registry responses. Help/local/auth/dry-run and failed data calls must not trigg
 
 All current tests run offline against loopback servers and temporary state. Package checks
 may fetch dependencies from npm, but never contact Oracle or read the real user's tokens.
-Large-response tests verify 128 MiB plain/compressed streams, hashes, boundaries,
+Large-response tests verify dimension and transaction 128 MiB plain/compressed streams, hashes, boundaries,
 error exit codes, cancellation, storage failures and private-file cleanup. Auth stays
 on its internal buffered parsing path, never the data export path.
 Only help/version/parser checks use the production installed shim; stateful integration

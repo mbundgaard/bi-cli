@@ -5,18 +5,21 @@ import path from 'node:path';
 import { areas } from '../dist/areas/index.js';
 import { setup, tokens, clientId } from './helpers.mjs';
 
-test('nine areas retain Oracle terminology; POS dimensions are implemented and the others are planned', async t => {
+test('nine areas retain Oracle terminology; POS dimensions and transactions are implemented', async t => {
   assert.deepEqual(areas.map(a => a.name), ['aggregations', 'cash-management', 'fiscal-transactions', 'kitchen-performance', 'labor', 'payment-dimensions', 'payment-transactions', 'pos-dimensions', 'pos-transactions']);
   const s = await setup(t);
   for (const area of areas) {
     const result = await s.run([area.name, '--help']); assert.equal(result.code, 0);
     assert.ok(result.stdout.includes(area.oracleName));
     if (area.name === 'pos-dimensions') assert.match(result.stdout, /16 BI JSON POST queries/);
+    else if (area.name === 'pos-transactions') assert.match(result.stdout, /seven location\/date-scoped BI JSON POST queries/);
     else assert.match(result.stdout, /not implemented/);
   }
   const endpoints = await s.run(['endpoints']);
-  assert.equal(JSON.parse(endpoints.stdout).data.dataEndpoints.length, 16);
-  assert.equal((await s.run(['pos-transactions', 'guest-checks'])).code, 6);
+  assert.equal(JSON.parse(endpoints.stdout).data.dataEndpoints.length, 23);
+  assert.equal(JSON.parse(endpoints.stdout).data.areas.filter(area => area.implemented).length, 2);
+  assert.equal((await s.run(['pos-transactions', 'guest-checks', 'list'])).code, 6);
+  assert.equal((await s.run(['payment-transactions', 'unknown'])).code, 6);
   assert.equal(s.calls.length, 0);
 });
 test('configuration uses explicit BI organization and preserves opaque client ID and case', async t => {

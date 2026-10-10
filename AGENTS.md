@@ -3,8 +3,23 @@
 BiCli is a TypeScript/Node 22+ Oracle Simphony Business Intelligence CLI. Read
 CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
 
-- Implemented: authentication and all 16 pos-dimensions calls. Eight other data
-  areas remain help-only. Do not claim planned operations are implemented.
+- Implemented: authentication, 16 pos-dimensions calls and seven pos-transactions
+  calls. Seven other data areas remain help-only. Transactions have offline and
+  scoped live coverage; empty line-item extensibility data leaves its populated
+  behavior unverified. Do not claim planned operations are implemented.
+- Transactions require one explicit location and business-date selection; guest
+  checks accepts exactly one open/closed/union date. Cursors never replace dates,
+  are forwarded unchanged as UTC, and are not persisted/advanced automatically.
+  No implicit date lookup, polling, pagination, aggregation or reconciliation.
+- The agent must choose the transaction date-selection basis from the user's intent,
+  asking when ambiguous. Open-date matches opened/reopened checks, closed-date matches
+  closed/reopen-closed checks, and union-date matches either. These are not current
+  open/closed status filters; closed-only is separate. Do not silently default the
+  basis or sum union-date results across dates without accounting for repeated checks.
+- Recommend offsetless UTC cursors: the tested deployment rejects trailing Z on all
+  four cursor endpoints. Never silently strip Z or retry. Non-sales/waste boundaries
+  were inclusive. Nested guest-check line filters retained nonmatching sibling lines;
+  do not assume child-array pruning. See docs/POS-TRANSACTIONS.md for scoped findings.
 - Three pillars: safe auth/tokens, explicit requests, verbatim API data. Data bodies
   above 16,384 decoded bytes OR 500 lines are saved unchanged; stdout returns a compact
   file receipt. Smaller bodies remain exact stdout bytes. All data calls must use

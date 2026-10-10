@@ -1,8 +1,10 @@
 # POS transactions: implementation overview
 
-Status: proposal, not implemented. This overview covers the seven endpoints in
-Oracle's Transactions task area. It does not authorize a scheduler, reconciliation
-engine, local warehouse, automatic discovery, token refresh or live writes.
+Status: implemented locally, offline-tested and scoped live-tested on all seven reads. This
+records the design for the seven endpoints in Oracle's Transactions task area.
+See [the implemented command guide](../docs/POS-TRANSACTIONS.md). No scheduler,
+reconciliation engine, local warehouse, automatic discovery or live writes are
+introduced. Requests reuse the previously agreed shared company renewal lifecycle.
 
 References were read directly from Oracle's documentation and cross-checked against
 Swagger version 2025.09.22, SHA-256
@@ -63,8 +65,12 @@ Important rules:
   location 99, search/projection 2000, application name 128 characters.
   Do not invent a numeric maximum from Swagger's numeric `maxLength` annotation.
 - Validate cursor timestamps without interpreting Oracle's documented offsetless
-  UTC values as machine-local time. Preserve accepted input spelling. Establish
-  supported precision and explicit-Z behavior during implementation/testing.
+  UTC values as machine-local time. The CLI accepts seconds, optional fractional
+  seconds and optional Z, preserving spelling/precision. Numeric offsets are
+  rejected, not converted. Scoped live tests accepted offsetless seconds and fractions
+  (including seven digits), but rejected trailing Z on all four cursor endpoints.
+  Recommend offsetless UTC; never silently strip Z or retry. Subsecond precision
+  semantics are not established merely by HTTP acceptance.
 - A since-cursor does not replace the required business date and is not an upper
   bound, a date range, or permission to fetch other dates.
 - No automatic cursor persistence/advancement, polling, lookback, fallback or retry.
@@ -244,7 +250,7 @@ Offline acceptance coverage:
 - Exact success/error bytes and exit codes, no data redirects/retries. Reuse shared
   company maintenance before data requests; keep auth unchanged when not due, pin
   company identity and persist due renewal/expiry cleanup safely. Local/dry-run stay offline.
-- Multi-hundred-megabyte synthetic plain/compressed responses with bounded memory,
+- Large synthetic plain/compressed responses (128 MiB per call) with bounded memory,
   hash equality, slow consumers, interrupted responses, decode failures, disk errors
   and private spool cleanup. Do not claim crash-proof cleanup or native-platform
   validation from mocks alone.
@@ -257,7 +263,8 @@ projections, then test selectors and cursors independently. No unbounded initial
 whole-day detail dump simply to prove connectivity. Obtain real dates/references
 through explicit reads; do not guess them or expose customer payloads in test artifacts.
 Runtime acceptance of transaction filters and the documented mismatches is still
-unverified at this planning stage.
+deployment-dependent; scoped findings and remaining gaps are recorded in the
+[command guide](../docs/POS-TRANSACTIONS.md).
 
 ## Sources
 
