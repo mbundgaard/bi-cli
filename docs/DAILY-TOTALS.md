@@ -1,8 +1,9 @@
 # Daily totals
 
-Eleven regular daily-total reads are implemented and offline-tested against Oracle
-Swagger 2025.09.22. **Scoped live functionality spot checks passed; numbers were not reconciled.** Control daily totals and all
-quarter-hour totals remain planned; the aggregations area is only partially implemented.
+All twelve daily-total reads, including control, are implemented and offline-tested
+against Oracle Swagger 2025.09.22. **Scoped live functionality spot checks passed;
+numbers were not reconciled.** Eight quarter-hour totals remain planned, so the
+aggregations area is still only partially implemented.
 
 ## Commands
 
@@ -11,6 +12,7 @@ Each command is `bi aggregations daily <noun> list` and makes one read-only POST
 
 | Noun | Operation | Data |
 |---|---|---|
+| `control` | `getControlDailyTotals` | End-of-day status, changes and control counts/totals |
 | `operations` | `getOperationsDailyTotals` | Operational totals by RVC |
 | `menu-items` | `getMenuItemDailyTotals` | Menu-item totals and grouping dimensions |
 | `combo-items` | `getComboItemDailyTotals` | Combo totals and components (20.1.8.3+) |
@@ -23,13 +25,13 @@ Each command is `bi aggregations daily <noun> list` and makes one read-only POST
 | `employees` | `getEmployeeDailyTotals` | Employee operational totals, including tips |
 | `job-codes` | `getJobCodeDailyTotals` | Job-code hours and pay, not time cards |
 
-No generic arbitrary-operation command is provided. `bi endpoints` lists the 34
+No generic arbitrary-operation command is provided. `bi endpoints` lists the 35
 implemented data calls and labels aggregations as partial, not a completed area.
-`bi aggregations daily control` and `bi aggregations quarter-hour` display help only.
+`bi aggregations quarter-hour` displays help only.
 
 ## One explicit location and date
 
-All eleven use the same documented request schema:
+The eleven regular totals (excluding control) use the same documented request schema:
 
 - Required `locRef`: nonblank string, at most 99 characters.
 - Required `busDt`: actual calendar date in `YYYY-MM-DD`.
@@ -85,9 +87,46 @@ Late uploads, reopened checks and subsequent corrections may change historical r
 - Tender totals are not proof of settlement, payout or complete payment coverage.
 
 No reconciliation, rounding, VAT/tip/combo calculation, local join, polling, multi-date
-scan or cursor persistence is implemented. Control totals will be a separate follow-up.
+scan or cursor persistence is implemented. Control data is available explicitly; no
+control lookup is automatically chained to another request.
 
-## Scoped live functionality checks
+## Control daily totals
+
+```sh
+bi aggregations daily control list --loc-ref "<location-reference>" --open-business-date "<YYYY-MM-DD>" --dry-run
+bi aggregations daily control list --loc-ref "<location-reference>" --closed-business-date "<YYYY-MM-DD>" --rvc-num 1
+```
+
+Replace the illustrative RVC with the authorized target. Control accepts the same
+optional `searchCriteria`, `include`, `applicationName` and common input/transport flags,
+plus native `rvcNum` (20.1.9.7+) and exactly one date-selection basis:
+
+- `--business-date` / `busDt`: open OR closed business date matches.
+- `--open-business-date` / `opnBusDt`: opened/reopened on the date (20.1.10+).
+- `--closed-business-date` / `clsdBusDt`: closed/reopen-closed on the date (20.1.10+).
+
+Oracle's required list incorrectly requires all three dates while their descriptions
+explicitly forbid combining them. The CLI follows mutual exclusion, with no default.
+Flags do not delete other date fields from JSON. Native RVC must be an integer JSON
+number; large integers are preserved without rounding. There is no closed-only flag
+or since-cursor on control totals. Choose the basis from user intent and match it to
+any separately requested guest-check comparison. Union results across dates can overlap.
+
+The response includes `eodStatus`, transaction/update timestamps and per-RVC control
+counts/totals. It remains verbatim: no inferred finality, reconciliation, polling or
+automatic guest-check fetch. Cloud last-updated fields are documented from 20.1.12+.
+
+**Observed naming mismatch:** the tested deployment returned `lastUpdateUTC` and
+`lastUpdateLcl`, while Swagger documents `lastUpdatedUTC` and `lastUpdatedLcl`.
+Projecting `lastUpdatedUTC` returned HTTP 400/code 33205. Projections using the observed
+names succeeded. Do not assume every deployment uses the same spelling; the CLI neither
+renames responses nor rewrites projections and retries.
+
+Control spot checks verified all three date selectors, native RVC, searchCriteria,
+minimal/update-field projections and applicationName. Numbers and end-of-day finality
+were not validated. No default projection is added, and Oracle errors remain unchanged.
+
+## Scoped live functionality checks for regular totals
 
 All eleven routes returned HTTP 200 with narrow location/date/RVC projections at one
 authorized location/date. These were functionality checks, not accounting reconciliation

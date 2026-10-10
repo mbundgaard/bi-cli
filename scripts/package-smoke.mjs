@@ -37,6 +37,10 @@ try {
   const dailyHelp = execute(['aggregations', 'daily', 'operations', 'list', '--help']);
   assert.equal(dailyHelp.status, 0, dailyHelp.stderr); assert.match(dailyHelp.stdout, /--business-date/);
   assert.match(dailyHelp.stdout, /getOperationsDailyTotals/); assert.match(dailyHelp.stdout, /no retries/i);
+  const controlHelp = execute(['aggregations', 'daily', 'control', 'list', '--help']);
+  assert.equal(controlHelp.status, 0, controlHelp.stderr);
+  assert.match(controlHelp.stdout, /--open-business-date/); assert.match(controlHelp.stdout, /--rvc-num/);
+  assert.match(controlHelp.stdout, /lastUpdateUTC/);
   const invalid = execute(['invalid-command']); assert.equal(invalid.status, 6); assert.equal(invalid.stdout, '');
   // State checks use installed modules and an isolated store, never real user data.
   const module = name => pathToFileURL(path.join(temp, 'node_modules/@muneris/bi-cli/dist', name)).href;
@@ -77,6 +81,17 @@ try {
   assert.equal(dailyPreview.status, 0, dailyPreview.stderr);
   assert.deepEqual(JSON.parse(dailyPreview.stdout).data.body, { locRef: 'synthetic', busDt: '2024-02-29', include: 'locRef,busDt,revenueCenters.rvcNum' });
   assert.equal(JSON.parse(dailyPreview.stdout).data.authorizationOmitted, true);
+  const controlPreview = spawnSync(process.execPath, ['--input-type=module', '-e',
+    `import { main } from ${JSON.stringify(module('cli.js'))};
+     import { StateStore } from ${JSON.stringify(module('state.js'))};
+     const store = new StateStore(${JSON.stringify(path.join(temp, 'control-state'))});
+     await store.save({schemaVersion:1,auth:{orgName:'synthetic',apiUrl:'https://reports.example.invalid'}});
+     process.exitCode = await main(['node','bi','aggregations','daily','control','list','--loc-ref','synthetic','--open-business-date','2024-02-29','--rvc-num','9007199254740993','--dry-run'],store);`
+  ], { encoding: 'utf8' });
+  assert.equal(controlPreview.status, 0, controlPreview.stderr); assert.match(controlPreview.stdout, /9007199254740993/);
+  assert.equal(JSON.parse(controlPreview.stdout).data.body.opnBusDt, '2024-02-29');
+  assert.equal(JSON.parse(controlPreview.stdout).data.body.busDt, undefined);
+  assert.equal(JSON.parse(controlPreview.stdout).data.authorizationOmitted, true);
   const delivery = spawnSync(process.execPath, ['--input-type=module', '-e',
     `import http from 'node:http';
      import { main } from ${JSON.stringify(module('cli.js'))};
@@ -106,5 +121,5 @@ try {
   ], { encoding: 'utf8', timeout: 10000 });
   assert.equal(notice.status, 0, notice.stderr); assert.equal(notice.stdout, '');
   assert.match(notice.stderr, /99\.0\.0 is available/);
-  console.log(`${packed.filename}: ${packed.files.length} allowlisted files; installed shim/help/version/parser, isolated state, dimension/transaction/daily dry-run, automatic file delivery and daily update notice verified.`);
+  console.log(`${packed.filename}: ${packed.files.length} allowlisted files; installed shim/help/version/parser, isolated state, dimension/transaction/daily/control dry-run, automatic file delivery and daily update notice verified.`);
 } finally { rmSync(temp, { recursive: true, force: true }); }

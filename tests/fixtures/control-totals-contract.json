@@ -1,0 +1,65 @@
+{
+  "source": "https://docs.oracle.com/en/industries/food-beverage/back-office/20.1/biapi/swagger.json",
+  "version": "2025.09.22",
+  "sha256": "ca16ae423d03a81d5aa6316f530f09e9de0e7cd64d53679ea4fa287d80da2ec9",
+  "operation": "getControlDailyTotals",
+  "request": {
+    "description": "Request payload for Control Daily Totals",
+    "properties": {
+      "locRef": {
+        "type": "string",
+        "description": "The location reference, this may be a store number or name depending on the organization",
+        "title": "Location Reference",
+        "maxLength": 99
+      },
+      "busDt": {
+        "type": "string",
+        "description": "If present, the API will return the superset of all guest checks where Open Business Date or Closed Business Date match to the supplied date. This parameter cannot be present if clsdBusDt or opnbusDt are present",
+        "title": "Business Date",
+        "format": "date"
+      },
+      "opnBusDt": {
+        "type": "string",
+        "description": "If present, the API will return the guest checks which were opened or reopened on the supplied business date. This parameter cannot be present if clsdBusDt or busDt are present. <p>First Available Version: 20.1.10</p>",
+        "title": "Business Date",
+        "format": "date"
+      },
+      "clsdBusDt": {
+        "type": "string",
+        "description": "If present, the API will return all guest checks which were closed or reopen closed on the supplied business date. This parameter cannot be present if opnBusDt or busDt are present. <p>First Available Version: 20.1.10</p>",
+        "title": "Business Date",
+        "format": "date"
+      },
+      "rvcNum": {
+        "type": "integer",
+        "description": "Revenue center number for which the control totals are to be fetched. <p>First Available Version: 20.1.9.7</p>",
+        "title": "Revenue center number",
+        "maxLength": 10
+      },
+      "searchCriteria": {
+        "type": "string",
+        "description": "Search criteria to filter results based on field value",
+        "title": "Search Criteria",
+        "maxLength": 2000
+      },
+      "include": {
+        "type": "string",
+        "description": "List of objects to include in response",
+        "title": "Include",
+        "maxLength": 2000
+      },
+      "applicationName": {
+        "type": "string",
+        "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+        "title": "Application Name",
+        "maxLength": 128
+      }
+    },
+    "required": [
+      "locRef",
+      "busDt",
+      "clsdBusDt",
+      "opnBusDt"
+    ]
+  }
+}

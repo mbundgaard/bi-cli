@@ -9,7 +9,7 @@ import { dimensionEndpoints } from './areas/pos-dimensions.js';
 import { registerDimensions } from './query-commands.js';
 import { registerTransactions } from './transaction-commands.js';
 import { transactionEndpoints } from './areas/pos-transactions.js';
-import { dailyEndpoints } from './areas/aggregations.js';
+import { allDailyEndpoints } from './areas/aggregations.js';
 import { registerDaily } from './daily-commands.js';
 import { CliError, Exit, localResult, reportError } from './output.js';
 const implementedAreas = ['pos-dimensions', 'pos-transactions'];
@@ -28,9 +28,9 @@ function nonblank(value: string, flag: string): string {
 }
 export function createProgram(store = new StateStore(), setExit: (code: number) => void = code => { process.exitCode = code; }, checkVersion = checkForUpdates, notifyUpdate = notifyForUpdates): Command {
   const root = new Command('bi')
-    .description('Oracle Simphony Business Intelligence CLI. Auth, POS dimensions, POS transactions and regular daily totals are implemented; control/quarter-hour totals and six other areas remain planned.')
+    .description('Oracle Simphony Business Intelligence CLI. Auth, POS dimensions, POS transactions and daily totals including control are implemented; quarter-hour totals and six other areas remain planned.')
     .version(version).exitOverride().configureOutput({ writeErr: () => {} });
-  root.addHelpText('after', '\nStart: bi auth status; reuse saved tokens or explicitly refresh.\nSetup: bi auth config --help, then bi auth login --help.\nBI uses id_token, not access_token. State is separate from STS and shared per OS user.\nNo environment-variable configuration, directory override or data retries.\nCompany profiles renew when due before data calls; expired token sets require login.\nSuccessful non-quiet calls check npm daily and notify on stderr; never install automatically.\nHelp/local/dry-run commands stay offline. Use bi version --check for an explicit lookup.\nPOS dimensions: bi pos-dimensions --help. Transactions: bi pos-transactions --help. Daily totals: bi aggregations daily --help. Control/quarter-hour totals remain planned. Support: support@muneris.dk.\n');
+  root.addHelpText('after', '\nStart: bi auth status; reuse saved tokens or explicitly refresh.\nSetup: bi auth config --help, then bi auth login --help.\nBI uses id_token, not access_token. State is separate from STS and shared per OS user.\nNo environment-variable configuration, directory override or data retries.\nCompany profiles renew when due before data calls; expired token sets require login.\nSuccessful non-quiet calls check npm daily and notify on stderr; never install automatically.\nHelp/local/dry-run commands stay offline. Use bi version --check for an explicit lookup.\nPOS dimensions: bi pos-dimensions --help. Transactions: bi pos-transactions --help. Daily totals: bi aggregations daily --help. Quarter-hour totals remain planned. Support: support@muneris.dk.\n');
   root.action(() => { root.outputHelp(); });
   registerCompanies(root, store);
   root.command('version').description('[read-only] Installed version; --check explicitly queries npm')
@@ -41,9 +41,9 @@ export function createProgram(store = new StateStore(), setExit: (code: number) 
     dataEndpoints: [
       ...dimensionEndpoints.map(endpoint => ({ command: `bi pos-dimensions ${endpoint.noun} ${endpoint.verb}`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${endpoint.operation}`, readOnly: true, scope: endpoint.allLocations ? 'location-or-organization-wide' : 'location-scoped' })),
       ...transactionEndpoints.map(endpoint => ({ command: `bi pos-transactions ${endpoint.noun} ${endpoint.verb}`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${endpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: endpoint.dates, cursorField: endpoint.cursor })),
-      ...dailyEndpoints.map(endpoint => ({ command: `bi aggregations daily ${endpoint.noun} list`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${endpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: ['busDt'] })),
+      ...allDailyEndpoints.map(endpoint => ({ command: `bi aggregations daily ${endpoint.noun} list`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${endpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: endpoint.control ? ['busDt', 'opnBusDt', 'clsdBusDt'] : ['busDt'], nativeRvc: !!endpoint.control })),
     ],
-    areas: areas.map(area => ({ ...area, implemented: implementedAreas.includes(area.name), ...(area.name === 'aggregations' ? { partiallyImplemented: true, implementedSections: ['daily (excluding control)'], plannedSections: ['daily control', 'quarter-hour'] } : {}) })),
+    areas: areas.map(area => ({ ...area, implemented: implementedAreas.includes(area.name), ...(area.name === 'aggregations' ? { partiallyImplemented: true, implementedSections: ['daily'], plannedSections: ['quarter-hour'] } : {}) })),
   }));
   const auth = root.command('auth').description('Oracle authorization-code + PKCE S256, ID tokens and scheduled company renewal');
   const status = async () => {

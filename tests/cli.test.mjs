@@ -17,11 +17,11 @@ test('nine areas retain Oracle terminology; POS dimensions and transactions are 
     else assert.match(result.stdout, /not implemented/);
   }
   const endpoints = await s.run(['endpoints']);
-  assert.equal(JSON.parse(endpoints.stdout).data.dataEndpoints.length, 34);
+  assert.equal(JSON.parse(endpoints.stdout).data.dataEndpoints.length, 35);
   assert.equal(JSON.parse(endpoints.stdout).data.areas.filter(area => area.implemented).length, 2);
   const aggregation = JSON.parse(endpoints.stdout).data.areas.find(area => area.name === 'aggregations');
   assert.equal(aggregation.implemented, false); assert.equal(aggregation.partiallyImplemented, true);
-  assert.deepEqual(aggregation.plannedSections, ['daily control', 'quarter-hour']);
+  assert.deepEqual(aggregation.plannedSections, ['quarter-hour']);
   assert.equal((await s.run(['pos-transactions', 'guest-checks', 'list'])).code, 6);
   assert.equal((await s.run(['payment-transactions', 'unknown'])).code, 6);
   assert.equal(s.calls.length, 0);

@@ -31,8 +31,8 @@ node bin/bi.js --help
 - `src/query-commands.ts`: POS-dimension commands, examples and help.
 - `src/transaction-commands.ts`, `src/transaction-requests.ts`: transaction commands,
   explicit date/cursor/native-selector validation, shared query execution.
-- `src/daily-commands.ts`, `src/daily-requests.ts`: eleven regular daily totals,
-  explicit locRef/busDt validation and shared query execution.
+- `src/daily-commands.ts`, `src/daily-requests.ts`: twelve daily totals including control,
+  explicit scope/date/native-RVC validation and shared query execution.
 - `src/areas/`: one module for each of the nine Oracle task areas, plus typed registry.
 - `tests/`: synthetic local mocks; the unpackaged runner injects an isolated StateStore.
 - `scripts/package-smoke.mjs`: package allowlist and actual installed shim checks.
@@ -71,13 +71,16 @@ All implemented areas use `executeQuery` for pinned-company renewal, one input r
 delivery and update notices; never duplicate that lifecycle in a new endpoint.
 
 Regular daily totals implements eleven shared-request-schema endpoints, with public
-contract fixtures and synthetic tests. Control totals and quarter-hour totals remain
-planned, so aggregation metadata explicitly reports partial implementation. Daily
+contract fixtures and synthetic tests. Control totals adds its distinct mutually exclusive date/native-RVC contract.
+Quarter-hour totals remain planned, so aggregation metadata still reports partial implementation. Daily
 functionality spot checks passed on all eleven routes using narrow projections.
 Job-code results were empty; populated payroll behavior and numerical reconciliation
 remain unverified. No accounting comparison or other deployment support is inferred.
 
-Future work: implement control/quarter-hour totals and the remaining six areas using their BI contracts,
+Control spot checks verified selectors and exposed lastUpdate versus lastUpdated
+response/projection spelling differences. Preserve Oracle output and never alias fields.
+
+Future work: implement quarter-hour totals and the remaining six areas using their BI contracts,
 not STS endpoint builders. Preserve unknown request fields and numeric precision.
 Distinguish business dates from UTC change cursors. Never turn a location-scoped request
 into organization-wide discovery or silently query every date/location. Search expressions

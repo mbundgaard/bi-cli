@@ -2,11 +2,18 @@
 
 ## Unreleased
 
+- Add control daily totals with exactly one open/closed/union date, optional native
+  integer RVC and shared filters/projections/input/delivery. All twelve daily-total
+  endpoints are now implemented; no automatic reconciliation or completion inference.
+- Scoped control functionality checks passed. Document observed lastUpdateUTC/Lcl
+  versus Swagger lastUpdatedUTC/Lcl spelling: the documented UTC projection failed
+  with HTTP 400. No automatic field renaming, projection rewrite or retry.
+
 - Implement eleven regular daily-total reads under `aggregations daily`, including
   operational, menu/combo, discount, service-charge, tender, tax, order, employee and
   job-code totals. Require explicit locRef/busDt; no default dates, native RVC flag,
   cursors, hidden filters or local reconciliation. Reuse pinned-company execution.
-- Label aggregations as partial: control and quarter-hour totals remain planned.
+- Label aggregations as partial: quarter-hour totals remain planned.
   Add public request-contract, synthetic route/validation/renewal/input/error tests,
   installed-package checks and 128 MiB plain/compressed daily streaming coverage.
   Scoped functionality spot checks passed on all eleven routes, with representative

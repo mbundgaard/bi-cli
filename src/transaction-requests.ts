@@ -17,7 +17,7 @@ export function integerOption(value: string): unknown {
   return parseJson(BigInt(value).toString());
 }
 // Validate numeric integer values without rounding raw JSON integers/decimals/exponents.
-function integerValue(value: unknown): boolean {
+export function integerValue(value: unknown): boolean {
   if (typeof value === 'number') return Number.isFinite(value) && Number.isInteger(value);
   if (!isRawJson(value)) return false;
   const match = /^-?(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/.exec(JSON.stringify(value));
