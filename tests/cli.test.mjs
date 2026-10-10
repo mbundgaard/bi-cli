@@ -13,11 +13,15 @@ test('nine areas retain Oracle terminology; POS dimensions and transactions are 
     assert.ok(result.stdout.includes(area.oracleName));
     if (area.name === 'pos-dimensions') assert.match(result.stdout, /16 BI JSON POST queries/);
     else if (area.name === 'pos-transactions') assert.match(result.stdout, /seven location\/date-scoped BI JSON POST queries/);
+    else if (area.name === 'aggregations') assert.match(result.stdout, /partially implemented/);
     else assert.match(result.stdout, /not implemented/);
   }
   const endpoints = await s.run(['endpoints']);
-  assert.equal(JSON.parse(endpoints.stdout).data.dataEndpoints.length, 23);
+  assert.equal(JSON.parse(endpoints.stdout).data.dataEndpoints.length, 34);
   assert.equal(JSON.parse(endpoints.stdout).data.areas.filter(area => area.implemented).length, 2);
+  const aggregation = JSON.parse(endpoints.stdout).data.areas.find(area => area.name === 'aggregations');
+  assert.equal(aggregation.implemented, false); assert.equal(aggregation.partiallyImplemented, true);
+  assert.deepEqual(aggregation.plannedSections, ['daily control', 'quarter-hour']);
   assert.equal((await s.run(['pos-transactions', 'guest-checks', 'list'])).code, 6);
   assert.equal((await s.run(['payment-transactions', 'unknown'])).code, 6);
   assert.equal(s.calls.length, 0);

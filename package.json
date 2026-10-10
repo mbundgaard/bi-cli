@@ -2,7 +2,7 @@
   "name": "@muneris/bi-cli",
   "version": "0.1.0-dev.0",
   "private": true,
-  "description": "Oracle Simphony Business Intelligence CLI with company authentication and raw POS-dimension/transaction queries",
+  "description": "Oracle Simphony Business Intelligence CLI with company authentication and verbatim dimension, transaction and daily-total queries",
   "type": "module",
   "license": "MIT",
   "author": "Muneris",

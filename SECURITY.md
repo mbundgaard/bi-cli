@@ -20,10 +20,11 @@ Local status reports expiry, not server validation. Authentication errors expose
 stages, HTTP statuses and selected known error codes, never raw response bodies or
 password-reset tokens. CLI help/version are local and do not contact Oracle.
 
-The package is unpublished. POS-dimension and POS-transaction queries are read-only
-but can expose sensitive location/personnel, check, journal, extensibility and SPI
-payment data. Transactions always require one explicit location and business-date
-selection; no automatic cursor advancement or multi-date/location discovery. Bodies above 16 KiB or 500 lines are saved verbatim
+The package is unpublished. Dimension, transaction and daily-total queries are read-only
+but can expose sensitive location/personnel, check, journal, extensibility, SPI payment,
+commercial, employee sales/tip and payroll information. Transactions and daily totals
+require one explicit location and business-date selection; no automatic cursor
+advancement or multi-date/location discovery. Bodies above 16 KiB or 500 lines are saved verbatim
 in private per-user response files; smaller bodies go to stdout unchanged. Neither is
 redacted. Completed exports have no automatic expiry: protect and delete them when no
 longer needed. Hard termination can leave private .part files. See docs/RESPONSES.md.

@@ -3,13 +3,15 @@
 Oracle Simphony Business Intelligence CLI, aligned with the Muneris STS CLI.
 Node.js 22+, TypeScript, Windows/macOS/Linux.
 
-**Current status: authentication, POS dimensions and POS transactions implemented.** PKCE login,
+**Current status: authentication, POS dimensions, POS transactions and regular daily totals implemented.** PKCE login,
 refresh and private per-user state were tested offline and against Oracle on
 Windows. Multi-company management, scheduled renewal and update notices now mirror
 STS. Scheduled BI renewal has live coverage; multi-company isolation remains
 synthetically tested, not live-tested with multiple BI companies. All 16 POS-dimension queries are implemented and returned HTTP 200 in
 live scoped testing at one location. Seven POS-transaction calls are implemented, offline-tested and passed scoped live
-reads. Cursor spelling and nested-filter caveats are documented in the transaction guide. The other seven data areas remain planned.
+reads. Cursor spelling and nested-filter caveats are documented in the transaction guide. Eleven regular daily-total calls are offline-tested and passed scoped live
+functionality checks, without numerical reconciliation.
+Control/quarter-hour totals and six other data areas remain planned.
 This package is private/unpublished. No STS configuration, credentials or token state are copied.
 
 ## Local setup
@@ -114,7 +116,8 @@ authorize publication or copy any STS credentials.
 
 Each area has its own source module and help entry. POS dimensions implements all
 16 documented calls; POS transactions implements seven location/date-scoped reads.
-The remaining seven groups currently display help only. `bi endpoints`
+Aggregations implements eleven regular daily totals; control and quarter-hour totals
+remain planned. Six other groups display help only. `bi endpoints`
 lists implemented requests and scopes. BI uses POST for reads; POST does not imply
 a business write. API data remains verbatim: small bodies go directly to stdout;
 bodies exceeding **16 KiB or 500 lines** are saved privately and stdout returns a
@@ -144,6 +147,18 @@ Location and business date are explicit. Guest checks requires exactly one open,
 closed or union date. No polling, cursor advancement, date/location loops, aggregation
 or reconciliation. Use projections to avoid unnecessarily large/sensitive exports.
 [POS transactions](docs/POS-TRANSACTIONS.md) describes all seven calls and caveats.
+
+## Daily totals
+
+```sh
+bi aggregations daily --help
+bi aggregations daily operations list --loc-ref "<location-reference>" --business-date "<YYYY-MM-DD>" --dry-run
+```
+
+These reads require one explicit location and `busDt`. No open/closed-date selectors,
+native RVC flag, cursors, inferred filters or local calculations. Totals are reported
+by Oracle, not reconciled by the CLI. [Daily totals](docs/DAILY-TOTALS.md) covers all
+eleven commands, grouping and sensitive employee/payroll data considerations.
 
 [Commands](docs/CLI.md) | [Development](docs/DEVELOPMENT.md) |
 [Contributing](CONTRIBUTING.md) | [Security](SECURITY.md)

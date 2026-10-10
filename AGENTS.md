@@ -4,9 +4,16 @@ BiCli is a TypeScript/Node 22+ Oracle Simphony Business Intelligence CLI. Read
 CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
 
 - Implemented: authentication, 16 pos-dimensions calls and seven pos-transactions
-  calls. Seven other data areas remain help-only. Transactions have offline and
+  calls, plus eleven regular daily-total calls under aggregations daily. Aggregations
+  is partial: control/quarter-hour totals remain planned; six other areas are help-only.
+  Daily totals have offline and scoped live functionality coverage, not numerical
+  reconciliation; empty job-code data leaves populated payroll behavior unverified. Transactions have offline and
   scoped live coverage; empty line-item extensibility data leaves its populated
   behavior unverified. Do not claim planned operations are implemented.
+- Regular daily totals require locRef and busDt, not open/closed selectors, native
+  rvcNum or since-cursors. RVC filters must be explicit searchCriteria. The agent
+  agrees a completed business date before live reconciliation tests; the CLI never
+  infers finality, fetches control totals or sums sales/tax/tips/combos itself.
 - Transactions require one explicit location and business-date selection; guest
   checks accepts exactly one open/closed/union date. Cursors never replace dates,
   are forwarded unchanged as UTC, and are not persisted/advanced automatically.

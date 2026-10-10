@@ -1,0 +1,461 @@
+{
+  "source": "https://docs.oracle.com/en/industries/food-beverage/back-office/20.1/biapi/swagger.json",
+  "version": "2025.09.22",
+  "sha256": "ca16ae423d03a81d5aa6316f530f09e9de0e7cd64d53679ea4fa287d80da2ec9",
+  "excludedOperations": [
+    "getControlDailyTotals"
+  ],
+  "endpoints": [
+    {
+      "path": "/bi/v1/{orgIdentifier}/getJobCodeDailyTotals",
+      "method": "POST",
+      "requestSchema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "description": "The location reference, this may be a store number or name depending on the organization",
+          "title": "Location Reference",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "description": "The business date associated with the cash management detail",
+          "title": "Business Date",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "description": "Search criteria to filter results based on field value",
+          "title": "Search Criteria",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "description": "List of objects to include in response",
+          "title": "Include",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+          "title": "Application Name",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getEmployeeDailyTotals",
+      "method": "POST",
+      "requestSchema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "description": "The location reference, this may be a store number or name depending on the organization",
+          "title": "Location Reference",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "description": "The business date associated with the cash management detail",
+          "title": "Business Date",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "description": "Search criteria to filter results based on field value",
+          "title": "Search Criteria",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "description": "List of objects to include in response",
+          "title": "Include",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+          "title": "Application Name",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getOperationsDailyTotals",
+      "method": "POST",
+      "requestSchema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "description": "The location reference, this may be a store number or name depending on the organization",
+          "title": "Location Reference",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "description": "The business date associated with the cash management detail",
+          "title": "Business Date",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "description": "Search criteria to filter results based on field value",
+          "title": "Search Criteria",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "description": "List of objects to include in response",
+          "title": "Include",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+          "title": "Application Name",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getMenuItemDailyTotals",
+      "method": "POST",
+      "requestSchema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "description": "The location reference, this may be a store number or name depending on the organization",
+          "title": "Location Reference",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "description": "The business date associated with the cash management detail",
+          "title": "Business Date",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "description": "Search criteria to filter results based on field value",
+          "title": "Search Criteria",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "description": "List of objects to include in response",
+          "title": "Include",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+          "title": "Application Name",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getComboItemDailyTotals",
+      "method": "POST",
+      "requestSchema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "description": "The location reference, this may be a store number or name depending on the organization",
+          "title": "Location Reference",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "description": "The business date associated with the cash management detail",
+          "title": "Business Date",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "description": "Search criteria to filter results based on field value",
+          "title": "Search Criteria",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "description": "List of objects to include in response",
+          "title": "Include",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+          "title": "Application Name",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getDiscountDailyTotals",
+      "method": "POST",
+      "requestSchema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "description": "The location reference, this may be a store number or name depending on the organization",
+          "title": "Location Reference",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "description": "The business date associated with the cash management detail",
+          "title": "Business Date",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "description": "Search criteria to filter results based on field value",
+          "title": "Search Criteria",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "description": "List of objects to include in response",
+          "title": "Include",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+          "title": "Application Name",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getServiceChargeDailyTotals",
+      "method": "POST",
+      "requestSchema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "description": "The location reference, this may be a store number or name depending on the organization",
+          "title": "Location Reference",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "description": "The business date associated with the cash management detail",
+          "title": "Business Date",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "description": "Search criteria to filter results based on field value",
+          "title": "Search Criteria",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "description": "List of objects to include in response",
+          "title": "Include",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+          "title": "Application Name",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getTenderMediaDailyTotals",
+      "method": "POST",
+      "requestSchema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "description": "The location reference, this may be a store number or name depending on the organization",
+          "title": "Location Reference",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "description": "The business date associated with the cash management detail",
+          "title": "Business Date",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "description": "Search criteria to filter results based on field value",
+          "title": "Search Criteria",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "description": "List of objects to include in response",
+          "title": "Include",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+          "title": "Application Name",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getTaxDailyTotals",
+      "method": "POST",
+      "requestSchema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "description": "The location reference, this may be a store number or name depending on the organization",
+          "title": "Location Reference",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "description": "The business date associated with the cash management detail",
+          "title": "Business Date",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "description": "Search criteria to filter results based on field value",
+          "title": "Search Criteria",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "description": "List of objects to include in response",
+          "title": "Include",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+          "title": "Application Name",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getOrderTypeDailyTotals",
+      "method": "POST",
+      "requestSchema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "description": "The location reference, this may be a store number or name depending on the organization",
+          "title": "Location Reference",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "description": "The business date associated with the cash management detail",
+          "title": "Business Date",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "description": "Search criteria to filter results based on field value",
+          "title": "Search Criteria",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "description": "List of objects to include in response",
+          "title": "Include",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+          "title": "Application Name",
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "path": "/bi/v1/{orgIdentifier}/getOrderChannelDailyTotals",
+      "method": "POST",
+      "requestSchema": "requestPayload",
+      "required": [
+        "locRef",
+        "busDt"
+      ],
+      "properties": {
+        "locRef": {
+          "type": "string",
+          "description": "The location reference, this may be a store number or name depending on the organization",
+          "title": "Location Reference",
+          "maxLength": 99
+        },
+        "busDt": {
+          "type": "string",
+          "description": "The business date associated with the cash management detail",
+          "title": "Business Date",
+          "format": "date"
+        },
+        "searchCriteria": {
+          "type": "string",
+          "description": "Search criteria to filter results based on field value",
+          "title": "Search Criteria",
+          "maxLength": 2000
+        },
+        "include": {
+          "type": "string",
+          "description": "List of objects to include in response",
+          "title": "Include",
+          "maxLength": 2000
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The name of the application which is accessing the API. <p>First Available Version: 20.1.10</p>",
+          "title": "Application Name",
+          "maxLength": 128
+        }
+      }
+    }
+  ]
+}

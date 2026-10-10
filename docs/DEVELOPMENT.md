@@ -31,13 +31,16 @@ node bin/bi.js --help
 - `src/query-commands.ts`: POS-dimension commands, examples and help.
 - `src/transaction-commands.ts`, `src/transaction-requests.ts`: transaction commands,
   explicit date/cursor/native-selector validation, shared query execution.
+- `src/daily-commands.ts`, `src/daily-requests.ts`: eleven regular daily totals,
+  explicit locRef/busDt validation and shared query execution.
 - `src/areas/`: one module for each of the nine Oracle task areas, plus typed registry.
 - `tests/`: synthetic local mocks; the unpackaged runner injects an isolated StateStore.
 - `scripts/package-smoke.mjs`: package allowlist and actual installed shim checks.
 
-The package remains private/unpublished. Source is in the private
-`mbundgaard/bi-cli` GitHub repository. No release, feedback service or publishing
-workflow is authorized by implementation work. Update lookup targets only the
+The npm package remains private/unpublished. Source is hosted at `mbundgaard/bi-cli`.
+GitHub repository visibility is independent of package.json's private flag; verify
+it separately before assuming source is private. No release, feedback service or
+publishing workflow is authorized by implementation work. Update lookup targets only the
 BI package on npm; unavailable is expected until a real release exists. CI configuration validates
 Windows/macOS/Linux with Node 22/24; that is not proof those remote jobs have run.
 Provider-owned catalog publication should follow STS once there is a real BI release.
@@ -64,10 +67,17 @@ preserved without local-time conversion. Scoped live results and limitations are
 recorded in [POS transactions](POS-TRANSACTIONS.md): recommend offsetless UTC, never
 silently strip a rejected Z suffix, and never locally prune returned sibling lines.
 Tests for these behaviors use wholly synthetic fixtures, not captured customer data.
-Both areas use `executeQuery` for pinned-company renewal, one input read, response
+All implemented areas use `executeQuery` for pinned-company renewal, one input read, response
 delivery and update notices; never duplicate that lifecycle in a new endpoint.
 
-Future work: implement the remaining seven areas separately using their BI contracts,
+Regular daily totals implements eleven shared-request-schema endpoints, with public
+contract fixtures and synthetic tests. Control totals and quarter-hour totals remain
+planned, so aggregation metadata explicitly reports partial implementation. Daily
+functionality spot checks passed on all eleven routes using narrow projections.
+Job-code results were empty; populated payroll behavior and numerical reconciliation
+remain unverified. No accounting comparison or other deployment support is inferred.
+
+Future work: implement control/quarter-hour totals and the remaining six areas using their BI contracts,
 not STS endpoint builders. Preserve unknown request fields and numeric precision.
 Distinguish business dates from UTC change cursors. Never turn a location-scoped request
 into organization-wide discovery or silently query every date/location. Search expressions
@@ -96,7 +106,7 @@ registry responses. Help/local/auth/dry-run and failed data calls must not trigg
 
 All current tests run offline against loopback servers and temporary state. Package checks
 may fetch dependencies from npm, but never contact Oracle or read the real user's tokens.
-Large-response tests verify dimension and transaction 128 MiB plain/compressed streams, hashes, boundaries,
+Large-response tests verify dimension, transaction and daily-total 128 MiB plain/compressed streams, hashes, boundaries,
 error exit codes, cancellation, storage failures and private-file cleanup. Auth stays
 on its internal buffered parsing path, never the data export path.
 Only help/version/parser checks use the production installed shim; stateful integration

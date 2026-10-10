@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Implement eleven regular daily-total reads under `aggregations daily`, including
+  operational, menu/combo, discount, service-charge, tender, tax, order, employee and
+  job-code totals. Require explicit locRef/busDt; no default dates, native RVC flag,
+  cursors, hidden filters or local reconciliation. Reuse pinned-company execution.
+- Label aggregations as partial: control and quarter-hour totals remain planned.
+  Add public request-contract, synthetic route/validation/renewal/input/error tests,
+  installed-package checks and 128 MiB plain/compressed daily streaming coverage.
+  Scoped functionality spot checks passed on all eleven routes, with representative
+  filters/projections, JSON input, renewal, file delivery and API rejection handling.
+  Empty job-code data and numerical reconciliation remain unverified. No publication
+  is authorized.
+
 - Implement seven POS-transaction read-only POST commands: guest checks, non-sales,
   journal logs, waste, check/line-item extensibility and SPI payments. Require explicit
   location and date, preserve unknown fields and exact numbers, and validate native

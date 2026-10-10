@@ -198,7 +198,7 @@ test('failed partial-file cleanup is reported, never hidden as completed output'
   } finally { t.mock.restoreAll(); syncBuiltinESMExports(); await collector.discard(); }
 });
 
-for (const operationArgs of [args, ['pos-transactions', 'guest-checks', 'list', '--loc-ref', 'synthetic', '--business-date', '2024-02-29']])
+for (const operationArgs of [args, ['pos-transactions', 'guest-checks', 'list', '--loc-ref', 'synthetic', '--business-date', '2024-02-29'], ['aggregations', 'daily', 'menu-items', 'list', '--loc-ref', 'synthetic', '--business-date', '2024-02-29']])
 for (const gzip of [false, true]) test(`${operationArgs[0]}: 128 MiB ${gzip ? 'compressed' : 'plain'} response streams to disk with exact hash and small stdout`, { timeout: 90000 }, async t => {
   const block = Buffer.alloc(64 * 1024, 120), count = 2048;
   const hash = createHash('sha256'); for (let i = 0; i < count; i++) hash.update(block);
