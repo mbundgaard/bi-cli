@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Extend scoped quarter-hour functionality coverage with 24 successful identifier-only
+  probes: item/combo projections, metadata and six RVC filters against stable baselines.
+  Document varying nested-child selection behavior without local pruning or rewriting;
+  financial reconciliation and populated job-code data remain outside this coverage.
+
 - Implement all eight 20.1.16+ quarter-hour aggregation reads, with explicit locRef/busDt,
   unchanged filters/projections and shared company/delivery handling. All twenty
   aggregation endpoints are implemented, for 43 total data calls across three areas.

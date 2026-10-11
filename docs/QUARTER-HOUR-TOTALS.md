@@ -91,6 +91,20 @@ location/date/RVC projections. Further functionality checks verified:
 - File/stdin input, applicationName and quiet output with a minimal projection.
 - Malformed filter rejection as HTTP 400/code 33214 and exit 11, without broader fallback.
 
+A further 24-probe pass covered menu items, combos, discounts, service charges, tenders
+and order types using identifier-only projections with quarter/business-hour/day-part
+metadata. All returned HTTP 200. Six RVC filters matched stable before/after projected
+baselines; item/price/order identifiers and nested combo-component projections worked.
+Completed file receipts were hash-verified, with no financial amounts or payroll detail
+requested in this pass.
+
+All six nested child-identifier predicates still returned some nonmatching children.
+Combo, discount and service-charge results matched the full RVC-only projected parent;
+menu-item, tender and order-type results differed from that baseline but still retained
+nonmatching child identifiers. Do not assume either complete pruning or that nested
+predicates always return the entire unchanged parent. These observations are specific
+to the tested predicates and deployment, not a universal filter grammar guarantee.
+
 Job-code results were empty, so populated payroll/quarter data there remains unverified.
 Initial RVC-only projections intentionally omitted quarter rows; absence under such a
 projection is not proof that quarter-hour data is empty. These checks do not validate

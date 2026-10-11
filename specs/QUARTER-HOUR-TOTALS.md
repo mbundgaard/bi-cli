@@ -40,3 +40,9 @@ nested quarter filters retained sibling quarters; document rather than locally p
 Representative RVC filtering, projections, JSON/file/stdin and quiet worked. Job-code
 results were empty. Malformed filters returned 400/33214. These are functionality
 observations, not numerical, completeness, DST or cross-deployment validation.
+
+A subsequent 24-probe identifier-only pass validated item/combo component projections,
+quarter metadata and RVC filters on the other six non-payroll endpoints against stable
+projected baselines. All six child-ID predicates retained nonmatching children; three
+returned unchanged parents and three differed from the RVC-only baseline. Document
+these limits rather than assuming uniform pruning or applying local transformations.

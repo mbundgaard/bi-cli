@@ -17,7 +17,9 @@ CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
 - Quarter-hour totals (20.1.16+) use locRef/busDt and the regular five-field request,
   with no native RVC, quarter or time-window selector. Never convert slot metadata to
   guessed timestamps, fill gaps, collapse day parts or locally roll up values. Tested
-  nested slot filters retained sibling quarterHours. Job-code populated data is unverified.
+  nested slot/item filters retained nonmatching children; some also changed the returned
+  subset. Do not assume consistent pruning or unchanged whole parents. Seven non-payroll
+  RVC filters passed; populated job-code data/filtering remains unverified.
 - Control daily totals requires exactly one open/closed/union date and optional native
   integer RVC; no closed-only flag or since-cursor. Match the date basis to user intent.
   Tested control responses use lastUpdateUTC/lastUpdateLcl, not Swagger's lastUpdated
