@@ -8,7 +8,7 @@ export interface DailyOptions extends QueryOptions {
   businessDate?: string; openBusinessDate?: string; closedBusinessDate?: string; rvcNum?: unknown;
 }
 export function buildDailyRequest(endpoint: DailyEndpoint, state: State, options: DailyOptions, input: Record<string, unknown> = {}) {
-  if (options.allLocations) throw new CliError(Exit.usage, 'Daily totals require one explicit location; no all-location mode');
+  if (options.allLocations) throw new CliError(Exit.usage, 'Aggregation totals require one explicit location; no all-location mode');
   const body = { ...input };
   for (const [flag, field] of [
     ['locRef', 'locRef'], ['businessDate', 'busDt'], ['searchCriteria', 'searchCriteria'],
@@ -23,7 +23,7 @@ export function buildDailyRequest(endpoint: DailyEndpoint, state: State, options
     dateField(body[dates[0]!], dates[0]!);
     if (body.rvcNum !== undefined && !integerValue(body.rvcNum)) throw new CliError(Exit.usage, 'rvcNum must be an integer JSON number');
   } else {
-    if (body.busDt === undefined) throw new CliError(Exit.usage, 'Supply --business-date or an explicit busDt; daily totals do not default a date');
+    if (body.busDt === undefined) throw new CliError(Exit.usage, 'Supply --business-date or an explicit busDt; aggregation totals do not default a date');
     dateField(body.busDt, 'busDt');
   }
   // These CLI-recognized selectors belong to other operations. Never silently ignore them.

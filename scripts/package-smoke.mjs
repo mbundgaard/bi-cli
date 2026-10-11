@@ -15,7 +15,7 @@ function npmCommand(args) {
 }
 try {
   const [packed] = JSON.parse(npmCommand(['pack', '--ignore-scripts', '--json', '--pack-destination', temp]));
-  const allow = new Set(['README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md', 'SECURITY.md', 'package.json', 'bin/bi.js', 'docs/CLI.md', 'docs/AUTHENTICATION.md', 'docs/DEVELOPMENT.md', 'docs/POS-DIMENSIONS.md', 'docs/POS-TRANSACTIONS.md', 'docs/DAILY-TOTALS.md', 'docs/RESPONSES.md']);
+  const allow = new Set(['README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md', 'SECURITY.md', 'package.json', 'bin/bi.js', 'docs/CLI.md', 'docs/AUTHENTICATION.md', 'docs/DEVELOPMENT.md', 'docs/POS-DIMENSIONS.md', 'docs/POS-TRANSACTIONS.md', 'docs/DAILY-TOTALS.md', 'docs/QUARTER-HOUR-TOTALS.md', 'docs/RESPONSES.md']);
   for (const file of packed.files) assert.ok(allow.has(file.path) || /^dist\/(?:areas\/)?[a-z-]+\.(?:js|d\.ts)$/.test(file.path), `Unexpected package file: ${file.path}`);
   npmCommand(['install', '--prefix', temp, '--ignore-scripts', '--no-audit', '--no-fund', path.join(temp, packed.filename)]);
   const shim = path.join(temp, 'node_modules', '.bin', process.platform === 'win32' ? 'bi.cmd' : 'bi');
@@ -41,6 +41,12 @@ try {
   assert.equal(controlHelp.status, 0, controlHelp.stderr);
   assert.match(controlHelp.stdout, /--open-business-date/); assert.match(controlHelp.stdout, /--rvc-num/);
   assert.match(controlHelp.stdout, /lastUpdateUTC/);
+  const quarterHelp = execute(['aggregations', 'quarter-hour', 'operations', 'list', '--help']);
+  assert.equal(quarterHelp.status, 0, quarterHelp.stderr); assert.match(quarterHelp.stdout, /getOperationsQuarterHourTotals/);
+  assert.match(quarterHelp.stdout, /20\.1\.16/); assert.match(quarterHelp.stdout, /Do not assume 96 returned rows/);
+  const inventory = execute(['endpoints']); assert.equal(inventory.status, 0, inventory.stderr);
+  assert.equal(JSON.parse(inventory.stdout).data.dataEndpoints.length, 43);
+  assert.equal(JSON.parse(inventory.stdout).data.areas.find(area => area.name === 'aggregations').implemented, true);
   const invalid = execute(['invalid-command']); assert.equal(invalid.status, 6); assert.equal(invalid.stdout, '');
   // State checks use installed modules and an isolated store, never real user data.
   const module = name => pathToFileURL(path.join(temp, 'node_modules/@muneris/bi-cli/dist', name)).href;
@@ -92,6 +98,16 @@ try {
   assert.equal(JSON.parse(controlPreview.stdout).data.body.opnBusDt, '2024-02-29');
   assert.equal(JSON.parse(controlPreview.stdout).data.body.busDt, undefined);
   assert.equal(JSON.parse(controlPreview.stdout).data.authorizationOmitted, true);
+  const quarterPreview = spawnSync(process.execPath, ['--input-type=module', '-e',
+    `import { main } from ${JSON.stringify(module('cli.js'))};
+     import { StateStore } from ${JSON.stringify(module('state.js'))};
+     const store = new StateStore(${JSON.stringify(path.join(temp, 'quarter-state'))});
+     await store.save({schemaVersion:1,auth:{orgName:'synthetic',apiUrl:'https://reports.example.invalid'}});
+     process.exitCode = await main(['node','bi','aggregations','quarter-hour','operations','list','--loc-ref','synthetic','--business-date','2024-02-29','--include','locRef,busDt,revenueCenters.quarterHours.qtrHrNum','--dry-run'],store);`
+  ], { encoding: 'utf8' });
+  assert.equal(quarterPreview.status, 0, quarterPreview.stderr);
+  assert.deepEqual(JSON.parse(quarterPreview.stdout).data.body, { locRef: 'synthetic', busDt: '2024-02-29', include: 'locRef,busDt,revenueCenters.quarterHours.qtrHrNum' });
+  assert.equal(JSON.parse(quarterPreview.stdout).data.authorizationOmitted, true);
   const delivery = spawnSync(process.execPath, ['--input-type=module', '-e',
     `import http from 'node:http';
      import { main } from ${JSON.stringify(module('cli.js'))};
@@ -121,5 +137,5 @@ try {
   ], { encoding: 'utf8', timeout: 10000 });
   assert.equal(notice.status, 0, notice.stderr); assert.equal(notice.stdout, '');
   assert.match(notice.stderr, /99\.0\.0 is available/);
-  console.log(`${packed.filename}: ${packed.files.length} allowlisted files; installed shim/help/version/parser, isolated state, dimension/transaction/daily/control dry-run, automatic file delivery and daily update notice verified.`);
+  console.log(`${packed.filename}: ${packed.files.length} allowlisted files; installed shim/help/version/parser, isolated state, dimension/transaction/daily/control/quarter-hour dry-run, automatic file delivery and daily update notice verified.`);
 } finally { rmSync(temp, { recursive: true, force: true }); }

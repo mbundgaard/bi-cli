@@ -3,7 +3,7 @@
 Oracle Simphony Business Intelligence CLI, aligned with the Muneris STS CLI.
 Node.js 22+, TypeScript, Windows/macOS/Linux.
 
-**Current status: authentication, POS dimensions, POS transactions and regular daily totals implemented.** PKCE login,
+**Current status: authentication, POS dimensions, POS transactions and all daily/quarter-hour aggregations implemented.** PKCE login,
 refresh and private per-user state were tested offline and against Oracle on
 Windows. Multi-company management, scheduled renewal and update notices now mirror
 STS. Scheduled BI renewal has live coverage; multi-company isolation remains
@@ -11,7 +11,8 @@ synthetically tested, not live-tested with multiple BI companies. All 16 POS-dim
 live scoped testing at one location. Seven POS-transaction calls are implemented, offline-tested and passed scoped live
 reads. Cursor spelling and nested-filter caveats are documented in the transaction guide. All twelve daily-total calls, including control, are offline-tested and passed scoped live
 functionality checks, without numerical reconciliation.
-Quarter-hour totals and six other data areas remain planned.
+All eight quarter-hour totals also passed scoped functionality checks. Six other
+areas remain planned.
 This package is private/unpublished. No STS configuration, credentials or token state are copied.
 
 ## Local setup
@@ -116,8 +117,8 @@ authorize publication or copy any STS credentials.
 
 Each area has its own source module and help entry. POS dimensions implements all
 16 documented calls; POS transactions implements seven location/date-scoped reads.
-Aggregations implements all twelve daily totals, including control; quarter-hour totals
-remain planned. Six other groups display help only. `bi endpoints`
+Aggregations implements all twenty endpoints: twelve daily totals including control
+and eight quarter-hour totals. Six other groups display help only. `bi endpoints`
 lists implemented requests and scopes. BI uses POST for reads; POST does not imply
 a business write. API data remains verbatim: small bodies go directly to stdout;
 bodies exceeding **16 KiB or 500 lines** are saved privately and stdout returns a
@@ -160,6 +161,17 @@ supports one open/closed/union date basis and optional native RVC. No cursors, i
 filters or local calculations. Totals are reported
 by Oracle, not reconciled by the CLI. [Daily totals](docs/DAILY-TOTALS.md) covers all
 twelve commands, grouping and sensitive employee/payroll data considerations.
+
+## Quarter-hour totals
+
+```sh
+bi aggregations quarter-hour --help
+bi aggregations quarter-hour operations list --loc-ref "<location-reference>" --business-date "<YYYY-MM-DD>" --dry-run
+```
+
+All eight documented endpoints (20.1.16+) require explicit location/date. No inferred
+time window, timezone conversion, gap filling or roll-up. Keep quarter/business-hour
+and day-part metadata. See [Quarter-hour totals](docs/QUARTER-HOUR-TOTALS.md).
 
 [Commands](docs/CLI.md) | [Development](docs/DEVELOPMENT.md) |
 [Contributing](CONTRIBUTING.md) | [Security](SECURITY.md)

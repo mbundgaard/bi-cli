@@ -4,8 +4,8 @@ BiCli is a TypeScript/Node 22+ Oracle Simphony Business Intelligence CLI. Read
 CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
 
 - Implemented: authentication, 16 pos-dimensions calls and seven pos-transactions
-  calls, plus twelve daily-total calls including control under aggregations daily.
-  Aggregations is partial: quarter-hour totals remain planned; six areas are help-only.
+  calls, plus all twenty aggregations (twelve daily including control, eight quarter-hour).
+  Six areas remain help-only.
   Daily totals have offline and scoped live functionality coverage, not numerical
   reconciliation; empty job-code data leaves populated payroll behavior unverified. Transactions have offline and
   scoped live coverage; empty line-item extensibility data leaves its populated
@@ -14,6 +14,10 @@ CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
   rvcNum or since-cursors. RVC filters must be explicit searchCriteria. The agent
   agrees a completed business date before live reconciliation tests; the CLI never
   infers finality, fetches control totals or sums sales/tax/tips/combos itself.
+- Quarter-hour totals (20.1.16+) use locRef/busDt and the regular five-field request,
+  with no native RVC, quarter or time-window selector. Never convert slot metadata to
+  guessed timestamps, fill gaps, collapse day parts or locally roll up values. Tested
+  nested slot filters retained sibling quarterHours. Job-code populated data is unverified.
 - Control daily totals requires exactly one open/closed/union date and optional native
   integer RVC; no closed-only flag or since-cursor. Match the date basis to user intent.
   Tested control responses use lastUpdateUTC/lastUpdateLcl, not Swagger's lastUpdated

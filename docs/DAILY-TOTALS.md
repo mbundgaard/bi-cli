@@ -2,8 +2,8 @@
 
 All twelve daily-total reads, including control, are implemented and offline-tested
 against Oracle Swagger 2025.09.22. **Scoped live functionality spot checks passed;
-numbers were not reconciled.** Eight quarter-hour totals remain planned, so the
-aggregations area is still only partially implemented.
+numbers were not reconciled.** Eight [quarter-hour totals](QUARTER-HOUR-TOTALS.md)
+are also implemented, completing all twenty aggregation endpoints.
 
 ## Commands
 
@@ -25,9 +25,8 @@ Each command is `bi aggregations daily <noun> list` and makes one read-only POST
 | `employees` | `getEmployeeDailyTotals` | Employee operational totals, including tips |
 | `job-codes` | `getJobCodeDailyTotals` | Job-code hours and pay, not time cards |
 
-No generic arbitrary-operation command is provided. `bi endpoints` lists the 35
-implemented data calls and labels aggregations as partial, not a completed area.
-`bi aggregations quarter-hour` displays help only.
+No generic arbitrary-operation command is provided. `bi endpoints` lists the 43
+implemented data calls, including all twenty aggregation endpoints.
 
 ## One explicit location and date
 

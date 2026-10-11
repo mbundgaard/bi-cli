@@ -10,8 +10,8 @@ Oracle Swagger 2025.09.22, SHA-256
 `ca16ae423d03a81d5aa6316f530f09e9de0e7cd64d53679ea4fa287d80da2ec9`.
 Reviewed all twelve Daily Aggregations operation descriptions, request schemas and
 examples. Eleven ordinary endpoints share `requestPayload`; control totals use the
-distinct `controlTotalsRequestPayload`. Control is now implemented; quarter-hour totals
-remain a follow-up.
+distinct `controlTotalsRequestPayload`. Control and all eight quarter-hour totals are now implemented; see
+[quarter-hour scope](QUARTER-HOUR-TOTALS.md).
 Public request-only fixture: `tests/fixtures/daily-totals-contract.json`. No live tenant
 data or full API dumps are included in fixtures or packaging.
 
@@ -29,7 +29,7 @@ getEmployeeDailyTotals and getJobCodeDailyTotals.
   numeric precision retained. No implicit filters, end-of-day checks or dates.
 - Use `executeQuery` and the existing response handler, not a duplicate auth/transport
   implementation. Preserve pinned company, ID tokens, renewal and advisory notices.
-- Registry/help distinguish partially implemented aggregations from completed areas.
+- Registry/help now mark aggregations complete following quarter-hour implementation.
 - API data, including errors, stays verbatim. No local aggregation or reconciliation.
 
 ## Control addition

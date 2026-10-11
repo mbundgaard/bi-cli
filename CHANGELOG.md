@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Implement all eight 20.1.16+ quarter-hour aggregation reads, with explicit locRef/busDt,
+  unchanged filters/projections and shared company/delivery handling. All twenty
+  aggregation endpoints are implemented, for 43 total data calls across three areas.
+  No time-window inference, UTC conversion, gap filling, pruning or local roll-up.
+- Add public quarter-hour request contracts, synthetic validation/input/renewal/identity/
+  error tests, 128 MiB plain/compressed streaming and installed-package checks. Scoped
+  live functionality probes passed; nested slot predicates retained sibling quarters,
+  job-code results were empty, and numbers were not reconciled. No publication.
+
 - Add control daily totals with exactly one open/closed/union date, optional native
   integer RVC and shared filters/projections/input/delivery. All twelve daily-total
   endpoints are now implemented; no automatic reconciliation or completion inference.
@@ -13,7 +22,7 @@
   operational, menu/combo, discount, service-charge, tender, tax, order, employee and
   job-code totals. Require explicit locRef/busDt; no default dates, native RVC flag,
   cursors, hidden filters or local reconciliation. Reuse pinned-company execution.
-- Label aggregations as partial: quarter-hour totals remain planned.
+- Initially label aggregations as partial; quarter-hour implementation now completes it.
   Add public request-contract, synthetic route/validation/renewal/input/error tests,
   installed-package checks and 128 MiB plain/compressed daily streaming coverage.
   Scoped functionality spot checks passed on all eleven routes, with representative
