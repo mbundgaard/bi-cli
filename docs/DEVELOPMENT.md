@@ -34,6 +34,8 @@ node bin/bi.js --help
 - `src/daily-commands.ts`, `src/daily-requests.ts`: shared aggregation commands and
   request validation (historical filenames), serving twelve daily and eight quarter-hour
   totals through the same pinned-company executor.
+- `src/cash-management.ts`: cash details commands/builder with shared location/date
+  body validation and pinned-company execution; no business-write operations.
 - `src/areas/`: one module for each of the nine Oracle task areas, plus typed registry.
 - `tests/`: synthetic local mocks; the unpackaged runner injects an isolated StateStore.
 - `scripts/package-smoke.mjs`: package allowlist and actual installed shim checks.
@@ -85,7 +87,12 @@ response/projection spelling differences. Preserve Oracle output and never alias
 Quarter-hour scoped functionality tests passed on all eight routes; slot-filtered
 parents retained sibling quarters. Populated job-code data remains unverified.
 
-Future work: implement the remaining six areas using their BI contracts,
+Cash-management details uses the same five-field requestPayload as regular totals.
+`validateLocationDateBody` centralizes those limits/known unsupported selectors; control
+and transaction contracts remain separate. Scoped cash reads were empty, so populated
+cash data/filter behavior remains unverified despite synthetic coverage.
+
+Future work: implement the remaining five areas using their BI contracts,
 not STS endpoint builders. Preserve unknown request fields and numeric precision.
 Distinguish business dates from UTC change cursors. Never turn a location-scoped request
 into organization-wide discovery or silently query every date/location. Search expressions
@@ -114,7 +121,7 @@ registry responses. Help/local/auth/dry-run and failed data calls must not trigg
 
 All current tests run offline against loopback servers and temporary state. Package checks
 may fetch dependencies from npm, but never contact Oracle or read the real user's tokens.
-Large-response tests verify dimension, transaction, daily and quarter-hour 128 MiB plain/compressed streams, hashes, boundaries,
+Large-response tests verify dimension, transaction, daily, quarter-hour and cash-detail 128 MiB plain/compressed streams, hashes, boundaries,
 error exit codes, cancellation, storage failures and private-file cleanup. Auth stays
 on its internal buffered parsing path, never the data export path.
 Only help/version/parser checks use the production installed shim; stateful integration

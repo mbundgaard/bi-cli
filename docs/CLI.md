@@ -12,6 +12,7 @@
 | `bi pos-transactions <noun> list` | Seven read-only location/date-scoped POST endpoints; see [POS transactions](POS-TRANSACTIONS.md) |
 | `bi aggregations daily <noun> list` | Twelve read-only daily totals, including control; see [Daily totals](DAILY-TOTALS.md) |
 | `bi aggregations quarter-hour <noun> list` | Eight read-only quarter-hour totals; see [Quarter-hour totals](QUARTER-HOUR-TOTALS.md) |
+| `bi cash-management details list` | Read-only cash details for one location/date; see [Cash management](CASH-MANAGEMENT.md) |
 | `bi auth status` | Local configuration presence and ID-token expiry summary |
 | `bi auth show` | Local saved configuration plus token presence, never token values |
 | `bi auth config` | Prepare the next login without changing saved profiles/tokens |
@@ -57,9 +58,9 @@ No Oracle credentials, cookies or customer data are sent to npm.
 
 ## Scaffolded only
 
-`cash-management`, `fiscal-transactions`,
+`fiscal-transactions`,
 `kitchen-performance`, `labor`, `payment-dimensions`, `payment-transactions`. Use `<group> --help` for scope and Oracle names.
-These six planned groups send no data requests. Aggregations is fully implemented:
+These five planned groups send no data requests. Aggregations is fully implemented:
 twelve daily-total reads (including control) and eight quarter-hour reads.
 Unimplemented operations fail as usage errors.
 

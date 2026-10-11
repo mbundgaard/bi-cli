@@ -5,11 +5,15 @@ CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
 
 - Implemented: authentication, 16 pos-dimensions calls and seven pos-transactions
   calls, plus all twenty aggregations (twelve daily including control, eight quarter-hour).
-  Six areas remain help-only.
+  Cash-management details are also implemented. Five areas remain help-only.
   Daily totals have offline and scoped live functionality coverage, not numerical
   reconciliation; empty job-code data leaves populated payroll behavior unverified. Transactions have offline and
   scoped live coverage; empty line-item extensibility data leaves its populated
   behavior unverified. Do not claim planned operations are implemented.
+- Cash-management details uses the five-field locRef/busDt request, with no native
+  RVC/receptacle/employee/cursor flags or business writes. Live data was empty; populated
+  records/filtering remain unverified. Protect amounts, employee references and notes;
+  never infer balances or overwrite returned actBusDate with the requested date.
 - Regular daily totals require locRef and busDt, not open/closed selectors, native
   rvcNum or since-cursors. RVC filters must be explicit searchCriteria. The agent
   agrees a completed business date before live reconciliation tests; the CLI never

@@ -1,5 +1,5 @@
 import { CliError, Exit } from './output.js';
-import { buildPostRequest, dateField, stringField, executeQuery, type QueryOptions } from './requests.js';
+import { buildPostRequest, dateField, stringField, validateLocationDateBody, executeQuery, type QueryOptions } from './requests.js';
 import { StateStore, stateDirectory, type State } from './state.js';
 import { notifyForUpdates } from './updates.js';
 import type { DailyEndpoint } from './areas/aggregations.js';
@@ -15,19 +15,17 @@ export function buildDailyRequest(endpoint: DailyEndpoint, state: State, options
     ['include', 'include'], ['applicationName', 'applicationName'],
     ['openBusinessDate', 'opnBusDt'], ['closedBusinessDate', 'clsdBusDt'], ['rvcNum', 'rvcNum'],
   ] as const) if (options[flag] !== undefined) body[field] = options[flag];
+  if (!endpoint.control) {
+    validateLocationDateBody(endpoint.operation, body);
+    return buildPostRequest(endpoint.operation, state, body);
+  }
   for (const [field, maximum] of [['locRef', 99], ['searchCriteria', 2000], ['include', 2000], ['applicationName', 128]] as const) stringField(body, field, maximum);
   if (body.locRef === undefined) throw new CliError(Exit.usage, 'Supply --loc-ref or an explicit locRef string in the request body');
-  if (endpoint.control) {
-    const dates = ['busDt', 'opnBusDt', 'clsdBusDt'].filter(field => body[field] !== undefined);
-    if (dates.length !== 1) throw new CliError(Exit.usage, 'Control totals require exactly one business date: busDt, opnBusDt or clsdBusDt');
-    dateField(body[dates[0]!], dates[0]!);
-    if (body.rvcNum !== undefined && !integerValue(body.rvcNum)) throw new CliError(Exit.usage, 'rvcNum must be an integer JSON number');
-  } else {
-    if (body.busDt === undefined) throw new CliError(Exit.usage, 'Supply --business-date or an explicit busDt; aggregation totals do not default a date');
-    dateField(body.busDt, 'busDt');
-  }
-  // These CLI-recognized selectors belong to other operations. Never silently ignore them.
-  const unsupported = ['clsdGuestChecksOnly', 'changedSinceUTC', 'transSinceUTC', ...(!endpoint.control ? ['opnBusDt', 'clsdBusDt', 'rvcNum'] : [])];
+  const dates = ['busDt', 'opnBusDt', 'clsdBusDt'].filter(field => body[field] !== undefined);
+  if (dates.length !== 1) throw new CliError(Exit.usage, 'Control totals require exactly one business date: busDt, opnBusDt or clsdBusDt');
+  dateField(body[dates[0]!], dates[0]!);
+  if (body.rvcNum !== undefined && !integerValue(body.rvcNum)) throw new CliError(Exit.usage, 'rvcNum must be an integer JSON number');
+  const unsupported = ['clsdGuestChecksOnly', 'changedSinceUTC', 'transSinceUTC'];
   for (const field of unsupported) {
     if (body[field] !== undefined) throw new CliError(Exit.usage, `${field} is not supported by ${endpoint.operation}`);
   }

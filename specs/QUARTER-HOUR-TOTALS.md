@@ -22,7 +22,8 @@ JSON fields and exact numbers, but reject known unsupported control/transaction 
 
 The existing daily command/request modules now serve all aggregation periods; reuse
 validation, one input read, pinned-company renewal and response delivery. Register
-aggregations as fully implemented: 20 endpoints, 43 total implemented BI data calls.
+aggregations as fully implemented: 20 endpoints. See bi endpoints for the current
+cross-area inventory, including subsequently implemented areas.
 
 ## Semantics and validation
 

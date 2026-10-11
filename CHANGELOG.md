@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Implement read-only `cash-management details list` with all five documented request
+  fields, explicit location/date and shared preflight/renewal/delivery. Four task areas
+  and 44 data endpoints are implemented; no cash-management writes or balance math.
+- Add public request contract, synthetic validation/input/precision/identity/renewal/
+  error tests, 128 MiB plain/compressed streaming and installed-package coverage.
+  Scoped cash functionality probes passed with empty results; populated cash data and
+  filters remain unverified. No scope expansion, numerical reconciliation or publication.
+
 - Extend scoped quarter-hour functionality coverage with 24 successful identifier-only
   probes: item/combo projections, metadata and six RVC filters against stable baselines.
   Document varying nested-child selection behavior without local pruning or rewriting;
