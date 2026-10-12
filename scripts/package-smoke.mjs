@@ -15,7 +15,7 @@ function npmCommand(args) {
 }
 try {
   const [packed] = JSON.parse(npmCommand(['pack', '--ignore-scripts', '--json', '--pack-destination', temp]));
-  const allow = new Set(['README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md', 'SECURITY.md', 'package.json', 'bin/bi.js', 'docs/CLI.md', 'docs/AUTHENTICATION.md', 'docs/DEVELOPMENT.md', 'docs/POS-DIMENSIONS.md', 'docs/POS-TRANSACTIONS.md', 'docs/DAILY-TOTALS.md', 'docs/QUARTER-HOUR-TOTALS.md', 'docs/CASH-MANAGEMENT.md', 'docs/FISCAL-TRANSACTIONS.md', 'docs/KITCHEN-PERFORMANCE.md', 'docs/LABOR.md', 'docs/PAYMENT-DIMENSIONS.md', 'docs/RESPONSES.md']);
+  const allow = new Set(['README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md', 'SECURITY.md', 'package.json', 'bin/bi.js', 'docs/CLI.md', 'docs/AUTHENTICATION.md', 'docs/DEVELOPMENT.md', 'docs/POS-DIMENSIONS.md', 'docs/POS-TRANSACTIONS.md', 'docs/DAILY-TOTALS.md', 'docs/QUARTER-HOUR-TOTALS.md', 'docs/CASH-MANAGEMENT.md', 'docs/FISCAL-TRANSACTIONS.md', 'docs/KITCHEN-PERFORMANCE.md', 'docs/LABOR.md', 'docs/PAYMENT-DIMENSIONS.md', 'docs/PAYMENT-TRANSACTIONS.md', 'docs/RESPONSES.md']);
   for (const file of packed.files) assert.ok(allow.has(file.path) || /^dist\/(?:areas\/)?[a-z-]+\.(?:js|d\.ts)$/.test(file.path), `Unexpected package file: ${file.path}`);
   npmCommand(['install', '--prefix', temp, '--ignore-scripts', '--no-audit', '--no-fund', path.join(temp, packed.filename)]);
   const shim = path.join(temp, 'node_modules', '.bin', process.platform === 'win32' ? 'bi.cmd' : 'bi');
@@ -45,7 +45,7 @@ try {
   assert.equal(quarterHelp.status, 0, quarterHelp.stderr); assert.match(quarterHelp.stdout, /getOperationsQuarterHourTotals/);
   assert.match(quarterHelp.stdout, /20\.1\.16/); assert.match(quarterHelp.stdout, /Do not assume 96 returned rows/);
   const inventory = execute(['endpoints']); assert.equal(inventory.status, 0, inventory.stderr);
-  assert.equal(JSON.parse(inventory.stdout).data.dataEndpoints.length, 51);
+  assert.equal(JSON.parse(inventory.stdout).data.dataEndpoints.length, 56);
   assert.equal(JSON.parse(inventory.stdout).data.areas.find(area => area.name === 'aggregations').implemented, true);
   const cashHelp = execute(['cash-management', 'details', 'list', '--help']);
   assert.equal(cashHelp.status, 0, cashHelp.stderr); assert.match(cashHelp.stdout, /getCashManagementDetails/);
@@ -73,6 +73,17 @@ try {
     assert.match(paymentHelp.stdout, noun === 'account-holders' ? /--organization-wide/ : /--loc-ref/);
   }
   assert.equal(JSON.parse(inventory.stdout).data.areas.find(area => area.name === 'payment-dimensions').implemented, true);
+  const paymentCases = [
+    ['settlements', '--settlement-date', 'stlmtDt'], ['transactions', '--business-date', 'busDt'],
+    ['payouts', '--booking-date', 'bookingDt'], ['payout-summary', '--payout-date', 'payoutDt'],
+    ['chargebacks', '--record-date', 'recordDt'],
+  ];
+  for (const [noun, flag] of paymentCases) {
+    const result = execute(['payment-transactions', noun, 'list', '--help']);
+    assert.equal(result.status, 0, result.stderr); assert.ok(result.stdout.includes(flag));
+    assert.match(result.stdout, /No charge\/refund\/cancel/);
+  }
+  assert.equal(JSON.parse(inventory.stdout).data.areas.filter(area => area.implemented).length, 9);
   const invalid = execute(['invalid-command']); assert.equal(invalid.status, 6); assert.equal(invalid.stdout, '');
   // State checks use installed modules and an isolated store, never real user data.
   const module = name => pathToFileURL(path.join(temp, 'node_modules/@muneris/bi-cli/dist', name)).href;
@@ -197,6 +208,21 @@ try {
     assert.equal(data.scope, noun === 'account-holders' ? 'organization-wide' : 'location-scoped');
     assert.deepEqual(data.body, noun === 'account-holders' ? {applicationName: 'Synthetic'} : {locRef: 'synthetic', applicationName: 'Synthetic'});
   }
+  for (const [noun, flag, field] of paymentCases) {
+    const account = noun === 'payout-summary';
+    const paymentPreview = spawnSync(process.execPath, ['--input-type=module', '-e',
+      `import { main } from ${JSON.stringify(module('cli.js'))};
+       import { StateStore } from ${JSON.stringify(module('state.js'))};
+       const store = new StateStore(${JSON.stringify(path.join(temp, 'payment-transaction-state'))});
+       await store.save({schemaVersion:1,auth:{orgName:'synthetic',apiUrl:'https://reports.example.invalid'}});
+       process.exitCode = await main(['node','bi','payment-transactions',${JSON.stringify(noun)},'list',${JSON.stringify(account ? '--account-code' : '--loc-ref')},'000Synthetic',${JSON.stringify(flag)},'2024-02-29','--dry-run'],store);`
+    ], { encoding: 'utf8' });
+    assert.equal(paymentPreview.status, 0, paymentPreview.stderr);
+    const data = JSON.parse(paymentPreview.stdout).data;
+    assert.equal(data.authorizationOmitted, true);
+    assert.equal(data.scope, account ? 'account/date-scoped' : 'location/date-scoped');
+    assert.deepEqual(data.body, {[account ? 'acctCode' : 'locRef']: '000Synthetic', [field]: '2024-02-29'});
+  }
   const delivery = spawnSync(process.execPath, ['--input-type=module', '-e',
     `import http from 'node:http';
      import { main } from ${JSON.stringify(module('cli.js'))};
@@ -226,5 +252,5 @@ try {
   ], { encoding: 'utf8', timeout: 10000 });
   assert.equal(notice.status, 0, notice.stderr); assert.equal(notice.stdout, '');
   assert.match(notice.stderr, /99\.0\.0 is available/);
-  console.log(`${packed.filename}: ${packed.files.length} allowlisted files; installed shim/help/version/parser, isolated state, dimension/transaction/daily/control/quarter-hour/cash/fiscal/KDS/labor/payment-dimensions dry-run, automatic file delivery and daily update notice verified.`);
+  console.log(`${packed.filename}: ${packed.files.length} allowlisted files; installed shim/help/version/parser, isolated state, dimension/transaction/daily/control/quarter-hour/cash/fiscal/KDS/labor/payment-dimensions/payment-transactions dry-run, automatic file delivery and daily update notice verified.`);
 } finally { rmSync(temp, { recursive: true, force: true }); }

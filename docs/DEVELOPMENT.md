@@ -44,6 +44,8 @@ node bin/bi.js --help
   boolean adjustments and unchanged changedSinceUTC; shared executeQuery.
 - `src/payment-dimensions.ts`: explicit organization-wide holder versus location account
   scope; shared execution, no date/cursor selectors or scope broadening.
+- `src/payment-transactions.ts`: five distinct date contracts, account-scoped summary
+  versus location reads, optional cursors only on two routes; shared execution.
 - `src/areas/`: one module for each of the nine Oracle task areas, plus typed registry.
 - `tests/`: synthetic local mocks; the unpackaged runner injects an isolated StateStore.
 - `scripts/package-smoke.mjs`: package allowlist and actual installed shim checks.
@@ -120,8 +122,11 @@ accounts requires locRef. Both reject invented dates/cursors. Authorized status-
 live probes returned HTTP 400/33108 on both routes; data behavior remains unverified.
 Preserve actual status, not a guessed 403. No organization-wide queries from location-only approval.
 
-Future work: implement the remaining payment-transactions area using their BI contracts,
-not STS endpoint builders. Preserve unknown request fields and numeric precision.
+Payment transactions completes all 56 documented routes using distinct settlement/business/
+booking/payout/record dates. Summary requires acctCode, not locRef. Only transactions and
+summary support changedSinceUTC. All five are offline-tested and live-unverified.
+
+Future work: authorized live validation and release readiness, not invented endpoints. Preserve unknown request fields and numeric precision.
 Distinguish business dates from UTC change cursors. Never turn a location-scoped request
 into organization-wide discovery or silently query every date/location. Search expressions
 are forwarded unchanged; current live tests require the guide's where-prefixed form.
@@ -149,7 +154,7 @@ registry responses. Help/local/auth/dry-run and failed data calls must not trigg
 
 All current tests run offline against loopback servers and temporary state. Package checks
 may fetch dependencies from npm, but never contact Oracle or read the real user's tokens.
-Large-response tests verify dimension, transaction, daily, quarter-hour, cash-detail, fiscal, KDS, labor and both payment-dimension 128 MiB plain/compressed streams, hashes, boundaries,
+Large-response tests verify dimension, transaction, daily, quarter-hour, cash-detail, fiscal, KDS, labor and both payment-dimension and all five payment-transaction 128 MiB plain/compressed streams, hashes, boundaries,
 error exit codes, cancellation, storage failures and private-file cleanup. Auth stays
 on its internal buffered parsing path, never the data export path.
 Only help/version/parser checks use the production installed shim; stateful integration

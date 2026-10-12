@@ -1,0 +1,18 @@
+{
+  "source": "https://docs.oracle.com/en/industries/food-beverage/back-office/20.1/biapi/swagger.json",
+  "version": "2025.09.22",
+  "sha256": "ca16ae423d03a81d5aa6316f530f09e9de0e7cd64d53679ea4fa287d80da2ec9",
+  "method": "POST",
+  "commonProperties": {
+    "include": {"type": "string", "maxLength": 2000},
+    "searchCriteria": {"type": "string", "maxLength": 2000},
+    "applicationName": {"type": "string", "maxLength": 128}
+  },
+  "endpoints": [
+    {"operation": "getPaymentSettlements", "schema": "paymentSettlementsPayload", "required": ["locRef", "stlmtDt"], "properties": {"locRef": {"type": "string", "maxLength": 99}, "stlmtDt": {"type": "string", "format": "date"}}},
+    {"operation": "getPaymentTransactions", "schema": "paymentTransactionsPayload", "required": ["locRef", "busDt"], "properties": {"locRef": {"type": "string", "maxLength": 99}, "busDt": {"type": "string", "format": "date"}, "changedSinceUTC": {"type": "string", "format": "date-time"}}},
+    {"operation": "getPaymentPayouts", "schema": "paymentPayoutsPayload", "required": ["locRef", "bookingDt"], "properties": {"locRef": {"type": "string", "maxLength": 99}, "bookingDt": {"type": "string", "format": "date"}}},
+    {"operation": "getPaymentPayoutSummary", "schema": "paymentPayoutSummaryPayload", "required": ["payoutDt", "acctCode"], "properties": {"payoutDt": {"type": "string", "format": "date"}, "acctCode": {"type": "string"}, "changedSinceUTC": {"type": "string", "format": "date-time"}}},
+    {"operation": "getPaymentChargebacks", "schema": "paymentChargebacksPayload", "required": ["locRef", "recordDt"], "properties": {"locRef": {"type": "string", "maxLength": 99}, "recordDt": {"type": "string", "format": "date"}}}
+  ]
+}

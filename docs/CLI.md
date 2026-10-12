@@ -7,12 +7,13 @@
 | `bi --help`, `bi --version` | Local human-readable help/version |
 | `bi version` | Local JSON version information |
 | `bi version --check` | Explicit advisory npm lookup; never installs |
-| `bi endpoints` | Local registry of implemented paths/methods/scopes and planned areas |
+| `bi endpoints` | Local registry of all 56 implemented paths/methods/scopes across nine areas |
 | `bi pos-dimensions <noun> <list|get>` | 16 read-only POST endpoints; see [POS dimensions](POS-DIMENSIONS.md) |
 | `bi pos-transactions <noun> list` | Seven read-only location/date-scoped POST endpoints; see [POS transactions](POS-TRANSACTIONS.md) |
 | `bi aggregations daily <noun> list` | Twelve read-only daily totals, including control; see [Daily totals](DAILY-TOTALS.md) |
 | `bi aggregations quarter-hour <noun> list` | Eight read-only quarter-hour totals; see [Quarter-hour totals](QUARTER-HOUR-TOTALS.md) |
 | `bi cash-management details list` | Read-only cash details for one location/date; see [Cash management](CASH-MANAGEMENT.md) |
+| `bi payment-transactions <noun> list` | Five read-only reports with distinct dates and location/account scope; see [Payment transactions](PAYMENT-TRANSACTIONS.md) |
 | `bi payment-dimensions accounts list` | Location-scoped Payment Cloud accounts; see [Payment dimensions](PAYMENT-DIMENSIONS.md) |
 | `bi payment-dimensions account-holders list` | Organization-wide holders; explicit --organization-wide required; no locRef/date |
 | `bi labor time-cards list` | Sensitive time-card read; busDt/postedDt or both (AND), optional employee/cursor/adjustments; see [Labor](LABOR.md) |
@@ -61,12 +62,12 @@ Unavailable is not up to date. BI remains private/unpublished, so registry looku
 be unavailable. Preserve the installation method and get approval before updating.
 No Oracle credentials, cookies or customer data are sent to npm.
 
-## Scaffolded only
+## Coverage
 
-`payment-transactions`. Use `bi payment-transactions --help` for scope and Oracle name.
-This planned group sends no data requests. Aggregations is fully implemented:
-twelve daily-total reads (including control) and eight quarter-hour reads.
-Unimplemented operations fail as usage errors.
+All 56 documented data endpoints across nine task areas have commands. Unknown operations
+fail as usage errors; there is no arbitrary endpoint or business-write command.
+Implementation does not imply full live validation. Payment dimensions was permission-
+rejected; payment transactions has no live coverage yet. See each area's guide for limits.
 
 ## Output and exit codes
 

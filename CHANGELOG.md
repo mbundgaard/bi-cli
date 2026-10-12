@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Implement the five payment-transaction reports with distinct date bases, location scope
+  or explicit account code for payout summary, and cursors only where documented.
+  All 56 documented data endpoints across nine areas now have commands; no payment writes.
+- Add contract/privacy/type-discrepancy guidance, synthetic route/scope/date/cursor/input/
+  precision/renewal/identity/error tests, 128 MiB streams on all five routes and installed
+  package checks. No live payment-transaction calls, reconciliation or publication.
+
 - Implement two Payment Cloud dimension reads, distinct organization-wide holder and
   location-scoped account contracts. Holders requires explicit --organization-wide;
   no invented date/cursor selectors, scope broadening or payment/account writes.

@@ -25,7 +25,7 @@ Each command is `bi aggregations daily <noun> list` and makes one read-only POST
 | `employees` | `getEmployeeDailyTotals` | Employee operational totals, including tips |
 | `job-codes` | `getJobCodeDailyTotals` | Job-code hours and pay, not time cards |
 
-No generic arbitrary-operation command is provided. `bi endpoints` lists the 51
+No generic arbitrary-operation command is provided. `bi endpoints` lists the 56
 implemented data calls, including all twenty aggregation endpoints.
 
 ## One explicit location and date

@@ -12,6 +12,8 @@ import { transactionEndpoints } from './areas/pos-transactions.js';
 import { allDailyEndpoints, quarterHourEndpoints } from './areas/aggregations.js';
 import { registerDaily } from './daily-commands.js';
 import { registerCash } from './cash-management.js';
+import { registerPaymentTransactions } from './payment-transactions.js';
+import { paymentTransactionEndpoints } from './areas/payment-transactions.js';
 import { registerPaymentDimensions } from './payment-dimensions.js';
 import { paymentDimensionEndpoints } from './areas/payment-dimensions.js';
 import { registerLabor } from './labor.js';
@@ -22,7 +24,7 @@ import { registerFiscal } from './fiscal-transactions.js';
 import { fiscalEndpoints } from './areas/fiscal-transactions.js';
 import { cashManagementEndpoint } from './areas/cash-management.js';
 import { CliError, Exit, localResult, reportError } from './output.js';
-const implementedAreas = ['pos-dimensions', 'pos-transactions', 'aggregations', 'cash-management', 'fiscal-transactions', 'kitchen-performance', 'labor', 'payment-dimensions'];
+const implementedAreas = ['pos-dimensions', 'pos-transactions', 'aggregations', 'cash-management', 'fiscal-transactions', 'kitchen-performance', 'labor', 'payment-dimensions', 'payment-transactions'];
 const version = (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }).version;
 function network(command: Command): Command {
   return command.option('--quiet', 'Suppress HTTP status diagnostics (not failures)')
@@ -38,9 +40,9 @@ function nonblank(value: string, flag: string): string {
 }
 export function createProgram(store = new StateStore(), setExit: (code: number) => void = code => { process.exitCode = code; }, checkVersion = checkForUpdates, notifyUpdate = notifyForUpdates): Command {
   const root = new Command('bi')
-    .description('Oracle Simphony Business Intelligence CLI. Auth, POS dimensions, POS transactions and all aggregations, cash management, fiscal transactions, kitchen performance, labor and payment dimensions are implemented; payment transactions remain planned.')
+    .description('Oracle Simphony Business Intelligence CLI. Auth, POS dimensions, POS transactions and all aggregations, cash management, fiscal transactions, kitchen performance, labor, payment dimensions and payment transactions are implemented; all nine data areas have commands.')
     .version(version).exitOverride().configureOutput({ writeErr: () => {} });
-  root.addHelpText('after', '\nStart: bi auth status; reuse saved tokens or explicitly refresh.\nSetup: bi auth config --help, then bi auth login --help.\nBI uses id_token, not access_token. State is separate from STS and shared per OS user.\nNo environment-variable configuration, directory override or data retries.\nCompany profiles renew when due before data calls; expired token sets require login.\nSuccessful non-quiet calls check npm daily and notify on stderr; never install automatically.\nHelp/local/dry-run commands stay offline. Use bi version --check for an explicit lookup.\nPOS dimensions: bi pos-dimensions --help. Transactions: bi pos-transactions --help. Daily totals: bi aggregations daily --help. Quarter-hour: bi aggregations quarter-hour --help. Cash: bi cash-management --help. Fiscal: bi fiscal-transactions --help. KDS: bi kitchen-performance --help. Labor: bi labor --help. Payment dimensions: bi payment-dimensions --help. Support: support@muneris.dk.\n');
+  root.addHelpText('after', '\nStart: bi auth status; reuse saved tokens or explicitly refresh.\nSetup: bi auth config --help, then bi auth login --help.\nBI uses id_token, not access_token. State is separate from STS and shared per OS user.\nNo environment-variable configuration, directory override or data retries.\nCompany profiles renew when due before data calls; expired token sets require login.\nSuccessful non-quiet calls check npm daily and notify on stderr; never install automatically.\nHelp/local/dry-run commands stay offline. Use bi version --check for an explicit lookup.\nPOS dimensions: bi pos-dimensions --help. Transactions: bi pos-transactions --help. Daily totals: bi aggregations daily --help. Quarter-hour: bi aggregations quarter-hour --help. Cash: bi cash-management --help. Fiscal: bi fiscal-transactions --help. KDS: bi kitchen-performance --help. Labor: bi labor --help. Payment dimensions: bi payment-dimensions --help. Payment transactions: bi payment-transactions --help. Support: support@muneris.dk.\n');
   root.action(() => { root.outputHelp(); });
   registerCompanies(root, store);
   root.command('version').description('[read-only] Installed version; --check explicitly queries npm')
@@ -54,6 +56,7 @@ export function createProgram(store = new StateStore(), setExit: (code: number) 
       ...allDailyEndpoints.map(endpoint => ({ command: `bi aggregations daily ${endpoint.noun} list`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${endpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: endpoint.control ? ['busDt', 'opnBusDt', 'clsdBusDt'] : ['busDt'], nativeRvc: !!endpoint.control })),
       ...quarterHourEndpoints.map(endpoint => ({ command: `bi aggregations quarter-hour ${endpoint.noun} list`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${endpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: ['busDt'], nativeRvc: false })),
       { command: `bi cash-management ${cashManagementEndpoint.noun} ${cashManagementEndpoint.verb}`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${cashManagementEndpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: ['busDt'], nativeRvc: false },
+      ...paymentTransactionEndpoints.map(endpoint => ({ command: `bi payment-transactions ${endpoint.noun} list`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${endpoint.operation}`, readOnly: true, scope: endpoint.accountScoped ? 'account/date-scoped' : 'location/date-scoped', dateFields: [endpoint.dateField], ...(endpoint.cursor ? { cursor: 'changedSinceUTC' } : {}), nativeRvc: false })),
       ...paymentDimensionEndpoints.map(endpoint => ({ command: `bi payment-dimensions ${endpoint.noun} list`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${endpoint.operation}`, readOnly: true, scope: endpoint.organizationWide ? 'organization-wide' : 'location-scoped', dateFields: [], nativeRvc: false })),
       { command: 'bi labor time-cards list', method: 'POST', path: `/bi/v1/{orgIdentifier}/${laborEndpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: ['busDt', 'postedDt'], dateSelection: 'at-least-one; both use AND', cursor: 'changedSinceUTC', nativeRvc: false },
       { command: 'bi kitchen-performance details list', method: 'POST', path: `/bi/v1/{orgIdentifier}/${kitchenEndpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: ['busDt'], cursor: 'transSinceUTC', nativeRvc: false },
@@ -147,6 +150,7 @@ export function createProgram(store = new StateStore(), setExit: (code: number) 
   registerKitchen(root, store, setExit, notifyUpdate);
   registerLabor(root, store, setExit, notifyUpdate);
   registerPaymentDimensions(root, store, setExit, notifyUpdate);
+  registerPaymentTransactions(root, store, setExit, notifyUpdate);
   for (const area of areas.filter(area => !implementedAreas.includes(area.name))) {
     const command = root.command(area.name).description(`[planned] ${area.oracleName}; data queries not implemented`);
     command.action(() => { command.outputHelp(); });

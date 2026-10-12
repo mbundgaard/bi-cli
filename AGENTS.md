@@ -5,12 +5,18 @@ CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
 
 - Implemented: authentication, 16 pos-dimensions calls and seven pos-transactions
   calls, plus all twenty aggregations (twelve daily including control, eight quarter-hour).
-  Cash-management details, three fiscal reads, KDS details, labor time cards and two payment dimensions are implemented. Payment transactions
-  remains help-only.
+  Cash-management details, three fiscal reads, KDS details, labor time cards and two payment dimensions are implemented. Five payment-transaction reads complete
+  all 56 documented data endpoints across nine areas; implementation is not full live coverage.
   Daily totals have offline and scoped live functionality coverage, not numerical
   reconciliation; empty job-code data leaves populated payroll behavior unverified. Transactions have offline and
   scoped live coverage; empty line-item extensibility data leaves its populated
   behavior unverified. Do not claim planned operations are implemented.
+- Payment transactions uses five distinct date bases: settlements stlmtDt, transactions
+  busDt, payouts bookingDt, payout-summary payoutDt, chargebacks recordDt. Four routes
+  require locRef; summary instead requires acctCode.
+  Only transactions/summary have changedSinceUTC. No date aliases, scope discovery,
+  native RVC or financial mutations/reconciliation. All five are live-unverified; get
+  exact date-basis/account scope before testing. Preserve response type discrepancies.
 - Payment dimensions requires Payment Cloud Service (20.1.11+), not SPI. Accounts
   require one locRef; account holders has no location selector and requires explicit
   --organization-wide approval/acknowledgement, even with filters. No dates/cursors,

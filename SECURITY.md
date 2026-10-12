@@ -24,7 +24,8 @@ The package is unpublished. Dimension, transaction, aggregation, cash-detail, fi
 but can expose sensitive location/personnel, check, journal, extensibility, SPI payment,
 commercial, employee sales/tip, payroll, cash/receptacle amounts, free-text notes, fiscal keys, customer references and
 country-specific fiscal blobs, KDS check/station identifiers, modifier text, time-card clock events, payroll identifiers,
-manager names, adjustment reasons, Payment Cloud holder contacts/addresses and statement names.
+manager names, adjustment reasons, Payment Cloud holder contacts/addresses, statement names,
+PSP/payment/merchant identifiers, card aliases/masked card data, authorization codes and disputes.
 Payment account-holder dimensions is organization-wide, requires explicit acknowledgement
 and must not be invoked under location-only approval. Transactions and daily totals
 require one explicit location and business-date selection; no automatic cursor
