@@ -43,7 +43,7 @@ export function dateField(value: unknown, field: string) {
     throw new CliError(Exit.usage, `${field} must be an actual calendar date in YYYY-MM-DD format`);
   }
 }
-// Oracle requestPayload shared by regular daily/quarter-hour totals and cash details.
+// Oracle requestPayload shared by regular daily/quarter-hour totals, cash details and fiscal reads.
 export function validateLocationDateBody(operation: string, body: Record<string, unknown>): void {
   for (const [field, maximum] of [['locRef', 99], ['searchCriteria', 2000], ['include', 2000], ['applicationName', 128]] as const) stringField(body, field, maximum);
   if (body.locRef === undefined) throw new CliError(Exit.usage, 'Supply --loc-ref or an explicit locRef string in the request body');

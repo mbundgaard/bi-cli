@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Implement three fiscal reads (invoices, totals, invoice-controls), all five documented
+  request fields, explicit location/date and shared company/response handling. Five
+  task areas and 47 data endpoints are implemented; no fiscal writes or interpretation.
+- Add public request fixtures, synthetic scope/input/precision/renewal/identity/error
+  tests, 128 MiB streams and installed-package checks. Scoped totals returned workstation
+  data; invoice/control results were empty. Document schema/example fiscal-date spelling
+  and embedded-json type discrepancies without aliases or parsing. No publication.
+
 - Implement read-only `cash-management details list` with all five documented request
   fields, explicit location/date and shared preflight/renewal/delivery. Four task areas
   and 44 data endpoints are implemented; no cash-management writes or balance math.

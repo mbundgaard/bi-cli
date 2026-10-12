@@ -5,11 +5,16 @@ CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
 
 - Implemented: authentication, 16 pos-dimensions calls and seven pos-transactions
   calls, plus all twenty aggregations (twelve daily including control, eight quarter-hour).
-  Cash-management details are also implemented. Five areas remain help-only.
+  Cash-management details and three fiscal reads are also implemented. Four areas
+  remain help-only.
   Daily totals have offline and scoped live functionality coverage, not numerical
   reconciliation; empty job-code data leaves populated payroll behavior unverified. Transactions have offline and
   scoped live coverage; empty line-item extensibility data leaves its populated
   behavior unverified. Do not claim planned operations are implemented.
+- Fiscal reads use the five-field location/date contract, not invoice/fiscal-date/cursor
+  selectors. No issuance, signing, sequence/lock mutations or tax/compliance inference.
+  Preserve embedded json and country-specific codes/dates. Invoices/control were empty
+  live; totals had workstation records. Protect customer references, fiscalKey and blobs.
 - Cash-management details uses the five-field locRef/busDt request, with no native
   RVC/receptacle/employee/cursor flags or business writes. Live data was empty; populated
   records/filtering remain unverified. Protect amounts, employee references and notes;
