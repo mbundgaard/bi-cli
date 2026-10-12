@@ -20,10 +20,10 @@ Local status reports expiry, not server validation. Authentication errors expose
 stages, HTTP statuses and selected known error codes, never raw response bodies or
 password-reset tokens. CLI help/version are local and do not contact Oracle.
 
-The package is unpublished. Dimension, transaction, aggregation, cash-detail and fiscal queries are read-only
+The package is unpublished. Dimension, transaction, aggregation, cash-detail, fiscal and KDS queries are read-only
 but can expose sensitive location/personnel, check, journal, extensibility, SPI payment,
 commercial, employee sales/tip, payroll, cash/receptacle amounts, free-text notes, fiscal keys, customer references and
-country-specific fiscal blobs. Transactions and daily totals
+country-specific fiscal blobs, KDS check/station identifiers and modifier text. Transactions and daily totals
 require one explicit location and business-date selection; no automatic cursor
 advancement or multi-date/location discovery. Bodies above 16 KiB or 500 lines are saved verbatim
 in private per-user response files; smaller bodies go to stdout unchanged. Neither is

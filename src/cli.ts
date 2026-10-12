@@ -12,11 +12,13 @@ import { transactionEndpoints } from './areas/pos-transactions.js';
 import { allDailyEndpoints, quarterHourEndpoints } from './areas/aggregations.js';
 import { registerDaily } from './daily-commands.js';
 import { registerCash } from './cash-management.js';
+import { registerKitchen } from './kitchen-performance.js';
+import { kitchenEndpoint } from './areas/kitchen-performance.js';
 import { registerFiscal } from './fiscal-transactions.js';
 import { fiscalEndpoints } from './areas/fiscal-transactions.js';
 import { cashManagementEndpoint } from './areas/cash-management.js';
 import { CliError, Exit, localResult, reportError } from './output.js';
-const implementedAreas = ['pos-dimensions', 'pos-transactions', 'aggregations', 'cash-management', 'fiscal-transactions'];
+const implementedAreas = ['pos-dimensions', 'pos-transactions', 'aggregations', 'cash-management', 'fiscal-transactions', 'kitchen-performance'];
 const version = (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }).version;
 function network(command: Command): Command {
   return command.option('--quiet', 'Suppress HTTP status diagnostics (not failures)')
@@ -32,9 +34,9 @@ function nonblank(value: string, flag: string): string {
 }
 export function createProgram(store = new StateStore(), setExit: (code: number) => void = code => { process.exitCode = code; }, checkVersion = checkForUpdates, notifyUpdate = notifyForUpdates): Command {
   const root = new Command('bi')
-    .description('Oracle Simphony Business Intelligence CLI. Auth, POS dimensions, POS transactions and all aggregations, cash management and fiscal transactions are implemented; four other areas remain planned.')
+    .description('Oracle Simphony Business Intelligence CLI. Auth, POS dimensions, POS transactions and all aggregations, cash management, fiscal transactions and kitchen performance are implemented; three other areas remain planned.')
     .version(version).exitOverride().configureOutput({ writeErr: () => {} });
-  root.addHelpText('after', '\nStart: bi auth status; reuse saved tokens or explicitly refresh.\nSetup: bi auth config --help, then bi auth login --help.\nBI uses id_token, not access_token. State is separate from STS and shared per OS user.\nNo environment-variable configuration, directory override or data retries.\nCompany profiles renew when due before data calls; expired token sets require login.\nSuccessful non-quiet calls check npm daily and notify on stderr; never install automatically.\nHelp/local/dry-run commands stay offline. Use bi version --check for an explicit lookup.\nPOS dimensions: bi pos-dimensions --help. Transactions: bi pos-transactions --help. Daily totals: bi aggregations daily --help. Quarter-hour: bi aggregations quarter-hour --help. Cash: bi cash-management --help. Fiscal: bi fiscal-transactions --help. Support: support@muneris.dk.\n');
+  root.addHelpText('after', '\nStart: bi auth status; reuse saved tokens or explicitly refresh.\nSetup: bi auth config --help, then bi auth login --help.\nBI uses id_token, not access_token. State is separate from STS and shared per OS user.\nNo environment-variable configuration, directory override or data retries.\nCompany profiles renew when due before data calls; expired token sets require login.\nSuccessful non-quiet calls check npm daily and notify on stderr; never install automatically.\nHelp/local/dry-run commands stay offline. Use bi version --check for an explicit lookup.\nPOS dimensions: bi pos-dimensions --help. Transactions: bi pos-transactions --help. Daily totals: bi aggregations daily --help. Quarter-hour: bi aggregations quarter-hour --help. Cash: bi cash-management --help. Fiscal: bi fiscal-transactions --help. KDS: bi kitchen-performance --help. Support: support@muneris.dk.\n');
   root.action(() => { root.outputHelp(); });
   registerCompanies(root, store);
   root.command('version').description('[read-only] Installed version; --check explicitly queries npm')
@@ -48,6 +50,7 @@ export function createProgram(store = new StateStore(), setExit: (code: number) 
       ...allDailyEndpoints.map(endpoint => ({ command: `bi aggregations daily ${endpoint.noun} list`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${endpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: endpoint.control ? ['busDt', 'opnBusDt', 'clsdBusDt'] : ['busDt'], nativeRvc: !!endpoint.control })),
       ...quarterHourEndpoints.map(endpoint => ({ command: `bi aggregations quarter-hour ${endpoint.noun} list`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${endpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: ['busDt'], nativeRvc: false })),
       { command: `bi cash-management ${cashManagementEndpoint.noun} ${cashManagementEndpoint.verb}`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${cashManagementEndpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: ['busDt'], nativeRvc: false },
+      { command: 'bi kitchen-performance details list', method: 'POST', path: `/bi/v1/{orgIdentifier}/${kitchenEndpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: ['busDt'], cursor: 'transSinceUTC', nativeRvc: false },
       ...fiscalEndpoints.map(endpoint => ({ command: `bi fiscal-transactions ${endpoint.noun} list`, method: 'POST', path: `/bi/v1/{orgIdentifier}/${endpoint.operation}`, readOnly: true, scope: 'location/date-scoped', dateFields: ['busDt'], nativeRvc: false })),
     ],
     areas: areas.map(area => ({ ...area, implemented: implementedAreas.includes(area.name), ...(area.name === 'aggregations' ? { partiallyImplemented: false, implementedSections: ['daily', 'quarter-hour'], plannedSections: [] } : {}) })),
@@ -135,6 +138,7 @@ export function createProgram(store = new StateStore(), setExit: (code: number) 
   registerDaily(root, store, setExit, notifyUpdate);
   registerCash(root, store, setExit, notifyUpdate);
   registerFiscal(root, store, setExit, notifyUpdate);
+  registerKitchen(root, store, setExit, notifyUpdate);
   for (const area of areas.filter(area => !implementedAreas.includes(area.name))) {
     const command = root.command(area.name).description(`[planned] ${area.oracleName}; data queries not implemented`);
     command.action(() => { command.outputHelp(); });

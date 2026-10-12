@@ -5,12 +5,18 @@ CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
 
 - Implemented: authentication, 16 pos-dimensions calls and seven pos-transactions
   calls, plus all twenty aggregations (twelve daily including control, eight quarter-hour).
-  Cash-management details and three fiscal reads are also implemented. Four areas
+  Cash-management details, three fiscal reads and KDS details are also implemented. Three areas
   remain help-only.
   Daily totals have offline and scoped live functionality coverage, not numerical
   reconciliation; empty job-code data leaves populated payroll behavior unverified. Transactions have offline and
   scoped live coverage; empty line-item extensibility data leaves its populated
   behavior unverified. Do not claim planned operations are implemented.
+- KDS details requires locRef/busDt, with optional transSinceUTC and common filter/
+  projection/applicationName fields. Reuse transaction validation, not the five-field
+  daily validator. Scoped KDS tests accepted offsetless seconds/fractions and rejected Z.
+  Two locations returned order records; one was empty. Suborders/nested filters and
+  cursor boundaries remain unverified. No bump/recall writes, inferred KPI math,
+  deduplication or aliasing actualPrepTimeinSecs/example actualPrepTimeInSecs.
 - Fiscal reads use the five-field location/date contract, not invoice/fiscal-date/cursor
   selectors. No issuance, signing, sequence/lock mutations or tax/compliance inference.
   Preserve embedded json and country-specific codes/dates. Invoices/control were empty

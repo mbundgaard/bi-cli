@@ -3,7 +3,7 @@
 Oracle Simphony Business Intelligence CLI, aligned with the Muneris STS CLI.
 Node.js 22+, TypeScript, Windows/macOS/Linux.
 
-**Current status: authentication, POS dimensions, POS transactions and all aggregations, cash management and fiscal transactions implemented.** PKCE login,
+**Current status: authentication, POS dimensions, POS transactions and all aggregations, cash management, fiscal transactions and kitchen performance implemented.** PKCE login,
 refresh and private per-user state were tested offline and against Oracle on
 Windows. Multi-company management, scheduled renewal and update notices now mirror
 STS. Scheduled BI renewal has live coverage; multi-company isolation remains
@@ -13,7 +13,8 @@ reads. Cursor spelling and nested-filter caveats are documented in the transacti
 functionality checks, without numerical reconciliation.
 All eight quarter-hour totals also passed scoped functionality checks. Cash-management
 reads passed with empty data, leaving populated behavior unverified. Fiscal reads also passed scoped functionality checks, with invoices/controls empty.
-Four areas remain planned.
+KDS functionality checks returned orders at two of three scoped locations; suborders
+remain unverified. Three areas remain planned.
 This package is private/unpublished. No STS configuration, credentials or token state are copied.
 
 ## Local setup
@@ -119,7 +120,7 @@ authorize publication or copy any STS credentials.
 Each area has its own source module and help entry. POS dimensions implements all
 16 documented calls; POS transactions implements seven location/date-scoped reads.
 Aggregations implements all twenty endpoints: twelve daily totals including control
-and eight quarter-hour totals. Cash-management details and three fiscal reads are also implemented. Four other groups display help only. `bi endpoints`
+and eight quarter-hour totals. Cash-management details and three fiscal reads are also implemented. KDS details is implemented with its optional transaction cursor. Three other groups display help only. `bi endpoints`
 lists implemented requests and scopes. BI uses POST for reads; POST does not imply
 a business write. API data remains verbatim: small bodies go directly to stdout;
 bodies exceeding **16 KiB or 500 lines** are saved privately and stdout returns a
@@ -183,6 +184,17 @@ bi cash-management details list --loc-ref "<location-reference>" --business-date
 Read existing records only; no paid-in/out, transfer, count or deposit writes. Scope/date
 are explicit; protect cash amounts, employee references and free-text notes.
 [Cash management](docs/CASH-MANAGEMENT.md) documents parameters and live-testing limits.
+
+## Kitchen performance
+
+```sh
+bi kitchen-performance details list --loc-ref "<location-reference>" --business-date "<YYYY-MM-DD>" --dry-run
+bi kitchen-performance --help
+```
+
+Read KDS order/suborder records; optional `--trans-since-utc` never replaces the explicit
+date. No bump/recall writes, polling or KPI calculations. See
+[Kitchen performance](docs/KITCHEN-PERFORMANCE.md) for fields and validation limits.
 
 ## Fiscal transactions
 

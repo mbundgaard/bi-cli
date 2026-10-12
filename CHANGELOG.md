@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Implement kitchen-performance details with all six documented request fields, explicit
+  location/business date and unchanged optional transSinceUTC. Six areas/48 data endpoints
+  are implemented. No KDS writes, KPI math, polling or cursor advancement.
+- Add KDS contract, scope/cursor/input/renewal/identity/error tests, 128 MiB streams and
+  installed-package checks. Thirteen scoped probes verified two populated order responses,
+  one empty location, RVC filtering, input modes and hash-verified exports. Offsetless
+  cursors passed; Z failed 400/33205. Suborders and cursor boundaries remain unverified.
+
 - Implement three fiscal reads (invoices, totals, invoice-controls), all five documented
   request fields, explicit location/date and shared company/response handling. Five
   task areas and 47 data endpoints are implemented; no fiscal writes or interpretation.

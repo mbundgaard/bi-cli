@@ -38,6 +38,8 @@ node bin/bi.js --help
   body validation and pinned-company execution; no business-write operations.
 - `src/fiscal-transactions.ts`: three explicit fiscal reads using the shared five-field
   body validator and executor; country-specific responses remain opaque.
+- `src/kitchen-performance.ts`: KDS-specific descriptor reuses transaction date/cursor
+  validation and executeQuery; no duplicated auth/delivery lifecycle.
 - `src/areas/`: one module for each of the nine Oracle task areas, plus typed registry.
 - `tests/`: synthetic local mocks; the unpackaged runner injects an isolated StateStore.
 - `scripts/package-smoke.mjs`: package allowlist and actual installed shim checks.
@@ -98,7 +100,11 @@ Fiscal transactions adds three reads with the same requestPayload. Scoped totals
 returned workstation data; invoices/control were empty. No country-specific response
 interpretation, fiscal blob parsing, sequence/lock operations or compliance inference.
 
-Future work: implement the remaining four areas using their BI contracts,
+KDS details adds a six-field request with optional transSinceUTC. Three-location scoped
+reads succeeded (two populated, one empty), RVC filters and input modes passed; suborders
+and cursor boundaries remain unverified. Trailing Z was rejected; recommend offsetless UTC.
+
+Future work: implement the remaining three areas using their BI contracts,
 not STS endpoint builders. Preserve unknown request fields and numeric precision.
 Distinguish business dates from UTC change cursors. Never turn a location-scoped request
 into organization-wide discovery or silently query every date/location. Search expressions
@@ -127,7 +133,7 @@ registry responses. Help/local/auth/dry-run and failed data calls must not trigg
 
 All current tests run offline against loopback servers and temporary state. Package checks
 may fetch dependencies from npm, but never contact Oracle or read the real user's tokens.
-Large-response tests verify dimension, transaction, daily, quarter-hour, cash-detail and fiscal 128 MiB plain/compressed streams, hashes, boundaries,
+Large-response tests verify dimension, transaction, daily, quarter-hour, cash-detail, fiscal and KDS 128 MiB plain/compressed streams, hashes, boundaries,
 error exit codes, cancellation, storage failures and private-file cleanup. Auth stays
 on its internal buffered parsing path, never the data export path.
 Only help/version/parser checks use the production installed shim; stateful integration
