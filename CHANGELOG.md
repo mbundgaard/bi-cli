@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Implement two Payment Cloud dimension reads, distinct organization-wide holder and
+  location-scoped account contracts. Holders requires explicit --organization-wide;
+  no invented date/cursor selectors, scope broadening or payment/account writes.
+- Add scope/privacy guidance, schema fixtures, input/renewal/identity/error tests,
+  128 MiB streams on both routes and installed-package checks. Eight areas/51 endpoints
+  implemented. Two authorized status-only live probes returned HTTP 400/33108 (documented
+  permission denial); successful data behavior remains unverified. No retries or publication.
+
 - Implement labor time-card reads with ten request fields: business/posted date or both
   (AND), mutually exclusive optional employee selectors, explicit adjustment boolean and
   unchanged changedSinceUTC. Seven areas/49 data endpoints implemented; no labor writes.

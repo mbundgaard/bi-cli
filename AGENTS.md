@@ -5,12 +5,19 @@ CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
 
 - Implemented: authentication, 16 pos-dimensions calls and seven pos-transactions
   calls, plus all twenty aggregations (twelve daily including control, eight quarter-hour).
-  Cash-management details, three fiscal reads, KDS details and labor time cards are implemented. Two areas
-  remain help-only.
+  Cash-management details, three fiscal reads, KDS details, labor time cards and two payment dimensions are implemented. Payment transactions
+  remains help-only.
   Daily totals have offline and scoped live functionality coverage, not numerical
   reconciliation; empty job-code data leaves populated payroll behavior unverified. Transactions have offline and
   scoped live coverage; empty line-item extensibility data leaves its populated
   behavior unverified. Do not claim planned operations are implemented.
+- Payment dimensions requires Payment Cloud Service (20.1.11+), not SPI. Accounts
+  require one locRef; account holders has no location selector and requires explicit
+  --organization-wide approval/acknowledgement, even with filters. No dates/cursors,
+  all-location fallback or business writes. Both scoped live probes were rejected with
+  HTTP 400/Oracle 33108 (documented permission denial); preserve actual status/exit 11.
+  Successful payment-dimension data behavior remains unverified; no automatic retry.
+  Protect codes, contact/address and statement-name data; no status/compliance inference.
 - Labor time cards requires locRef and busDt or postedDt or both (AND). Choose the date
   basis from user intent; ask if ambiguous. Never alias incorrect PostedDt casing.
   empNum/extPayrollID are optional and mutually exclusive; adjustments are explicit.

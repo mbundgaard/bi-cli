@@ -3,7 +3,7 @@
 Oracle Simphony Business Intelligence CLI, aligned with the Muneris STS CLI.
 Node.js 22+, TypeScript, Windows/macOS/Linux.
 
-**Current status: authentication, POS dimensions, POS transactions and all aggregations, cash management, fiscal transactions, kitchen performance and labor implemented.** PKCE login,
+**Current status: authentication, POS dimensions, POS transactions and all aggregations, cash management, fiscal transactions, kitchen performance, labor and payment dimensions implemented.** PKCE login,
 refresh and private per-user state were tested offline and against Oracle on
 Windows. Multi-company management, scheduled renewal and update notices now mirror
 STS. Scheduled BI renewal has live coverage; multi-company isolation remains
@@ -15,7 +15,7 @@ All eight quarter-hour totals also passed scoped functionality checks. Cash-mana
 reads passed with empty data, leaving populated behavior unverified. Fiscal reads also passed scoped functionality checks, with invoices/controls empty.
 KDS functionality checks returned orders at two of three scoped locations; suborders
 remain unverified. Labor time cards is offline-tested; scoped live metadata reads returned no time cards.
-Two areas remain planned.
+Payment dimensions is offline-tested; live probes were permission-rejected (33108). Only payment transactions remains planned.
 This package is private/unpublished. No STS configuration, credentials or token state are copied.
 
 ## Local setup
@@ -121,7 +121,7 @@ authorize publication or copy any STS credentials.
 Each area has its own source module and help entry. POS dimensions implements all
 16 documented calls; POS transactions implements seven location/date-scoped reads.
 Aggregations implements all twenty endpoints: twelve daily totals including control
-and eight quarter-hour totals. Cash-management details and three fiscal reads are also implemented. KDS details is implemented with its optional transaction cursor. Labor time cards is implemented with its distinct business/posted date selection. Two other groups display help only. `bi endpoints`
+and eight quarter-hour totals. Cash-management details and three fiscal reads are also implemented. KDS details is implemented with its optional transaction cursor. Labor time cards is implemented with its distinct business/posted date selection. Two payment-dimension reads are implemented with distinct organization/location scopes. Only payment transactions displays help without data commands. `bi endpoints`
 lists implemented requests and scopes. BI uses POST for reads; POST does not imply
 a business write. API data remains verbatim: small bodies go directly to stdout;
 bodies exceeding **16 KiB or 500 lines** are saved privately and stdout returns a
@@ -185,6 +185,17 @@ bi cash-management details list --loc-ref "<location-reference>" --business-date
 Read existing records only; no paid-in/out, transfer, count or deposit writes. Scope/date
 are explicit; protect cash amounts, employee references and free-text notes.
 [Cash management](docs/CASH-MANAGEMENT.md) documents parameters and live-testing limits.
+
+## Payment dimensions
+
+```sh
+bi payment-dimensions accounts list --loc-ref "<location-reference>" --dry-run
+bi payment-dimensions account-holders list --organization-wide --dry-run
+```
+
+Requires Oracle MICROS Payment Cloud Service, not SPI. Accounts are location-scoped;
+account holders requires separate organization-wide approval. No date selectors or
+business writes. [Payment dimensions](docs/PAYMENT-DIMENSIONS.md) explains scope and privacy.
 
 ## Labor
 
