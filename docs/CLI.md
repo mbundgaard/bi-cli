@@ -13,6 +13,7 @@
 | `bi aggregations daily <noun> list` | Twelve read-only daily totals, including control; see [Daily totals](DAILY-TOTALS.md) |
 | `bi aggregations quarter-hour <noun> list` | Eight read-only quarter-hour totals; see [Quarter-hour totals](QUARTER-HOUR-TOTALS.md) |
 | `bi cash-management details list` | Read-only cash details for one location/date; see [Cash management](CASH-MANAGEMENT.md) |
+| `bi labor time-cards list` | Sensitive time-card read; busDt/postedDt or both (AND), optional employee/cursor/adjustments; see [Labor](LABOR.md) |
 | `bi kitchen-performance details list` | KDS location/date query with optional transSinceUTC; see [Kitchen performance](KITCHEN-PERFORMANCE.md) |
 | `bi fiscal-transactions <noun> list` | Three read-only fiscal location/date queries; see [Fiscal transactions](FISCAL-TRANSACTIONS.md) |
 | `bi auth status` | Local configuration presence and ID-token expiry summary |
@@ -60,8 +61,8 @@ No Oracle credentials, cookies or customer data are sent to npm.
 
 ## Scaffolded only
 
-`labor`, `payment-dimensions`, `payment-transactions`. Use `<group> --help` for scope and Oracle names.
-These three planned groups send no data requests. Aggregations is fully implemented:
+`payment-dimensions`, `payment-transactions`. Use `<group> --help` for scope and Oracle names.
+These two planned groups send no data requests. Aggregations is fully implemented:
 twelve daily-total reads (including control) and eight quarter-hour reads.
 Unimplemented operations fail as usage errors.
 

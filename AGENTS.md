@@ -5,12 +5,19 @@ CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
 
 - Implemented: authentication, 16 pos-dimensions calls and seven pos-transactions
   calls, plus all twenty aggregations (twelve daily including control, eight quarter-hour).
-  Cash-management details, three fiscal reads and KDS details are also implemented. Three areas
+  Cash-management details, three fiscal reads, KDS details and labor time cards are implemented. Two areas
   remain help-only.
   Daily totals have offline and scoped live functionality coverage, not numerical
   reconciliation; empty job-code data leaves populated payroll behavior unverified. Transactions have offline and
   scoped live coverage; empty line-item extensibility data leaves its populated
   behavior unverified. Do not claim planned operations are implemented.
+- Labor time cards requires locRef and busDt or postedDt or both (AND). Choose the date
+  basis from user intent; ask if ambiguous. Never alias incorrect PostedDt casing.
+  empNum/extPayrollID are optional and mutually exclusive; adjustments are explicit.
+  Requires 20.2+ and payroll preprocessing. Scoped business-date metadata reads were
+  empty; populated cards, posted dates, employee filters, cursors and adjustments remain
+  unverified. Get narrow scope before querying employee/payroll data. No writes, payroll math, snapshot/finality
+  claims, polling, deduplication or automatic changedSinceUTC advancement.
 - KDS details requires locRef/busDt, with optional transSinceUTC and common filter/
   projection/applicationName fields. Reuse transaction validation, not the five-field
   daily validator. Scoped KDS tests accepted offsetless seconds/fractions and rejected Z.

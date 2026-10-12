@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Implement labor time-card reads with ten request fields: business/posted date or both
+  (AND), mutually exclusive optional employee selectors, explicit adjustment boolean and
+  unchanged changedSinceUTC. Seven areas/49 data endpoints implemented; no labor writes.
+- Document contradictory required-date/casing and posted-date descriptions, current-state
+  semantics and payroll preprocessing requirement. Add synthetic contracts, precision,
+  selector/date/cursor/renewal/error/identity tests, 128 MiB streams and installed-package
+  checks. Five scoped live metadata/input/error checks passed with empty time-card data;
+  populated behavior remains unverified. No payroll reconciliation or publication.
+
 - Implement kitchen-performance details with all six documented request fields, explicit
   location/business date and unchanged optional transSinceUTC. Six areas/48 data endpoints
   are implemented. No KDS writes, KPI math, polling or cursor advancement.

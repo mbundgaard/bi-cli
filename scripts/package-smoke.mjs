@@ -15,7 +15,7 @@ function npmCommand(args) {
 }
 try {
   const [packed] = JSON.parse(npmCommand(['pack', '--ignore-scripts', '--json', '--pack-destination', temp]));
-  const allow = new Set(['README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md', 'SECURITY.md', 'package.json', 'bin/bi.js', 'docs/CLI.md', 'docs/AUTHENTICATION.md', 'docs/DEVELOPMENT.md', 'docs/POS-DIMENSIONS.md', 'docs/POS-TRANSACTIONS.md', 'docs/DAILY-TOTALS.md', 'docs/QUARTER-HOUR-TOTALS.md', 'docs/CASH-MANAGEMENT.md', 'docs/FISCAL-TRANSACTIONS.md', 'docs/KITCHEN-PERFORMANCE.md', 'docs/RESPONSES.md']);
+  const allow = new Set(['README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md', 'SECURITY.md', 'package.json', 'bin/bi.js', 'docs/CLI.md', 'docs/AUTHENTICATION.md', 'docs/DEVELOPMENT.md', 'docs/POS-DIMENSIONS.md', 'docs/POS-TRANSACTIONS.md', 'docs/DAILY-TOTALS.md', 'docs/QUARTER-HOUR-TOTALS.md', 'docs/CASH-MANAGEMENT.md', 'docs/FISCAL-TRANSACTIONS.md', 'docs/KITCHEN-PERFORMANCE.md', 'docs/LABOR.md', 'docs/RESPONSES.md']);
   for (const file of packed.files) assert.ok(allow.has(file.path) || /^dist\/(?:areas\/)?[a-z-]+\.(?:js|d\.ts)$/.test(file.path), `Unexpected package file: ${file.path}`);
   npmCommand(['install', '--prefix', temp, '--ignore-scripts', '--no-audit', '--no-fund', path.join(temp, packed.filename)]);
   const shim = path.join(temp, 'node_modules', '.bin', process.platform === 'win32' ? 'bi.cmd' : 'bi');
@@ -45,7 +45,7 @@ try {
   assert.equal(quarterHelp.status, 0, quarterHelp.stderr); assert.match(quarterHelp.stdout, /getOperationsQuarterHourTotals/);
   assert.match(quarterHelp.stdout, /20\.1\.16/); assert.match(quarterHelp.stdout, /Do not assume 96 returned rows/);
   const inventory = execute(['endpoints']); assert.equal(inventory.status, 0, inventory.stderr);
-  assert.equal(JSON.parse(inventory.stdout).data.dataEndpoints.length, 48);
+  assert.equal(JSON.parse(inventory.stdout).data.dataEndpoints.length, 49);
   assert.equal(JSON.parse(inventory.stdout).data.areas.find(area => area.name === 'aggregations').implemented, true);
   const cashHelp = execute(['cash-management', 'details', 'list', '--help']);
   assert.equal(cashHelp.status, 0, cashHelp.stderr); assert.match(cashHelp.stdout, /getCashManagementDetails/);
@@ -61,6 +61,11 @@ try {
   assert.equal(kitchenHelp.status, 0, kitchenHelp.stderr);
   assert.match(kitchenHelp.stdout, /--trans-since-utc/); assert.match(kitchenHelp.stdout, /actualPrepTimeinSecs/);
   assert.equal(JSON.parse(inventory.stdout).data.areas.find(area => area.name === 'kitchen-performance').implemented, true);
+  const laborHelp = execute(['labor', 'time-cards', 'list', '--help']);
+  assert.equal(laborHelp.status, 0, laborHelp.stderr);
+  assert.match(laborHelp.stdout, /--posted-date/); assert.match(laborHelp.stdout, /--include-adjustments/);
+  assert.match(laborHelp.stdout, /payroll preprocessing/);
+  assert.equal(JSON.parse(inventory.stdout).data.areas.find(area => area.name === 'labor').implemented, true);
   const invalid = execute(['invalid-command']); assert.equal(invalid.status, 6); assert.equal(invalid.stdout, '');
   // State checks use installed modules and an isolated store, never real user data.
   const module = name => pathToFileURL(path.join(temp, 'node_modules/@muneris/bi-cli/dist', name)).href;
@@ -154,6 +159,22 @@ try {
   assert.equal(kitchenPreview.status, 0, kitchenPreview.stderr);
   assert.deepEqual(JSON.parse(kitchenPreview.stdout).data.body, {locRef: 'synthetic', busDt: '2024-02-29', transSinceUTC: '2024-02-29T10:00:00.1234567', include: 'revenueCenters.rvcNum', searchCriteria: 'where equals(revenueCenters.rvcNum,7)', applicationName: 'Synthetic'});
   assert.equal(JSON.parse(kitchenPreview.stdout).data.authorizationOmitted, true);
+  for (const dates of [['--business-date','2024-02-29'], ['--posted-date','2024-03-01'], ['--business-date','2024-02-29','--posted-date','2024-03-01']]) {
+    const laborPreview = spawnSync(process.execPath, ['--input-type=module', '-e',
+      `import { main } from ${JSON.stringify(module('cli.js'))};
+       import { StateStore } from ${JSON.stringify(module('state.js'))};
+       const store = new StateStore(${JSON.stringify(path.join(temp, 'labor-state'))});
+       await store.save({schemaVersion:1,auth:{orgName:'synthetic',apiUrl:'https://reports.example.invalid'}});
+       process.exitCode = await main(['node','bi','labor','time-cards','list','--loc-ref','synthetic',...${JSON.stringify(dates)},'--ext-payroll-id','000Synthetic','--include-adjustments','false','--changed-since-utc','2024-03-01T10:00:00.1234567','--dry-run'],store);`
+    ], { encoding: 'utf8' });
+    assert.equal(laborPreview.status, 0, laborPreview.stderr);
+    const data = JSON.parse(laborPreview.stdout).data;
+    assert.equal(data.authorizationOmitted, true); assert.equal(data.body.extPayrollID, '000Synthetic');
+    assert.equal(data.body.includeAdjustments, false);
+    assert.equal(data.body.changedSinceUTC, '2024-03-01T10:00:00.1234567');
+    assert.equal(data.body.busDt, dates.includes('--business-date') ? '2024-02-29' : undefined);
+    assert.equal(data.body.postedDt, dates.includes('--posted-date') ? '2024-03-01' : undefined);
+  }
   const delivery = spawnSync(process.execPath, ['--input-type=module', '-e',
     `import http from 'node:http';
      import { main } from ${JSON.stringify(module('cli.js'))};
@@ -183,5 +204,5 @@ try {
   ], { encoding: 'utf8', timeout: 10000 });
   assert.equal(notice.status, 0, notice.stderr); assert.equal(notice.stdout, '');
   assert.match(notice.stderr, /99\.0\.0 is available/);
-  console.log(`${packed.filename}: ${packed.files.length} allowlisted files; installed shim/help/version/parser, isolated state, dimension/transaction/daily/control/quarter-hour/cash/fiscal/KDS dry-run, automatic file delivery and daily update notice verified.`);
+  console.log(`${packed.filename}: ${packed.files.length} allowlisted files; installed shim/help/version/parser, isolated state, dimension/transaction/daily/control/quarter-hour/cash/fiscal/KDS/labor dry-run, automatic file delivery and daily update notice verified.`);
 } finally { rmSync(temp, { recursive: true, force: true }); }

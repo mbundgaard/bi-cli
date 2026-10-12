@@ -1,0 +1,29 @@
+{
+  "source": "https://docs.oracle.com/en/industries/food-beverage/back-office/20.1/biapi/swagger.json",
+  "version": "2025.09.22",
+  "sha256": "ca16ae423d03a81d5aa6316f530f09e9de0e7cd64d53679ea4fa287d80da2ec9",
+  "path": "/bi/v1/{orgIdentifier}/getTimeCardDetails",
+  "method": "POST",
+  "schema": "timeCardDetailsRequestPayload",
+  "request": {
+    "required": ["locRef", "busDt", "PostedDt"],
+    "properties": {
+      "applicationName": {"type": "string", "maxLength": 128},
+      "searchCriteria": {"type": "string", "maxLength": 2000},
+      "include": {"type": "string", "maxLength": 2000},
+      "busDt": {"type": "string", "format": "date", "description": "Either busDt or postedDt must be present; both combine using AND."},
+      "postedDt": {"type": "string", "format": "date", "description": "Either postedDt or busDt must be present; both combine using AND."},
+      "locRef": {"type": "string", "maxLength": 99},
+      "includeAdjustments": {"type": "boolean"},
+      "empNum": {"type": "integer", "maxLength": 10},
+      "extPayrollID": {"type": "string", "maxLength": 32},
+      "changedSinceUTC": {"type": "string", "format": "date-time"}
+    }
+  },
+  "notes": [
+    "Request-property descriptions, not contradictory required list, define busDt/postedDt selection.",
+    "empNum and extPayrollID are mutually exclusive; neither is required.",
+    "includeAdjustments default false is described by Oracle; CLI does not inject a default.",
+    "Integer maxLength is retained as source annotation, not invented minimum/maximum numeric bounds."
+  ]
+}
