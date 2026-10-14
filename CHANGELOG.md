@@ -2,12 +2,28 @@
 
 ## Unreleased
 
+- None.
+
+## 0.1.1 - 2026-10-14
+
+- Align authentication safety with the independently implemented STS/CC contract,
+  without shared packages or cross-repository dependencies. Tighten callback
+  port/fragment and token validation and sanitize cookie-jar failures.
+- Report expiring-soon consistently and add 47 matching synthetic authentication
+  scenarios. Preserve BI ID tokens, separate state, renewal and recovery behavior.
+  These changes are offline-tested, not newly validated against live Oracle.
+
+## 0.1.0 - 2026-10-13
+
+- Prepare npm publication metadata for `@muneris/bi-cli`: remove the private package
+  flag, set public scoped publish config, add repository/bugs/homepage/keywords, and
+  document registry installation.
 - Implement the five payment-transaction reports with distinct date bases, location scope
   or explicit account code for payout summary, and cursors only where documented.
   All 56 documented data endpoints across nine areas now have commands; no payment writes.
 - Add contract/privacy/type-discrepancy guidance, synthetic route/scope/date/cursor/input/
   precision/renewal/identity/error tests, 128 MiB streams on all five routes and installed
-  package checks. No live payment-transaction calls, reconciliation or publication.
+  package checks. No live payment-transaction calls or reconciliation.
 
 - Implement two Payment Cloud dimension reads, distinct organization-wide holder and
   location-scoped account contracts. Holders requires explicit --organization-wide;
@@ -15,7 +31,7 @@
 - Add scope/privacy guidance, schema fixtures, input/renewal/identity/error tests,
   128 MiB streams on both routes and installed-package checks. Eight areas/51 endpoints
   implemented. Two authorized status-only live probes returned HTTP 400/33108 (documented
-  permission denial); successful data behavior remains unverified. No retries or publication.
+  permission denial); successful data behavior remains unverified. No retries.
 
 - Implement labor time-card reads with ten request fields: business/posted date or both
   (AND), mutually exclusive optional employee selectors, explicit adjustment boolean and
@@ -24,7 +40,7 @@
   semantics and payroll preprocessing requirement. Add synthetic contracts, precision,
   selector/date/cursor/renewal/error/identity tests, 128 MiB streams and installed-package
   checks. Five scoped live metadata/input/error checks passed with empty time-card data;
-  populated behavior remains unverified. No payroll reconciliation or publication.
+  populated behavior remains unverified. No payroll reconciliation.
 
 - Implement kitchen-performance details with all six documented request fields, explicit
   location/business date and unchanged optional transSinceUTC. Six areas/48 data endpoints
@@ -40,7 +56,7 @@
 - Add public request fixtures, synthetic scope/input/precision/renewal/identity/error
   tests, 128 MiB streams and installed-package checks. Scoped totals returned workstation
   data; invoice/control results were empty. Document schema/example fiscal-date spelling
-  and embedded-json type discrepancies without aliases or parsing. No publication.
+  and embedded-json type discrepancies without aliases or parsing.
 
 - Implement read-only `cash-management details list` with all five documented request
   fields, explicit location/date and shared preflight/renewal/delivery. Four task areas
@@ -48,7 +64,7 @@
 - Add public request contract, synthetic validation/input/precision/identity/renewal/
   error tests, 128 MiB plain/compressed streaming and installed-package coverage.
   Scoped cash functionality probes passed with empty results; populated cash data and
-  filters remain unverified. No scope expansion, numerical reconciliation or publication.
+  filters remain unverified. No scope expansion or numerical reconciliation.
 
 - Extend scoped quarter-hour functionality coverage with 24 successful identifier-only
   probes: item/combo projections, metadata and six RVC filters against stable baselines.
@@ -62,7 +78,7 @@
 - Add public quarter-hour request contracts, synthetic validation/input/renewal/identity/
   error tests, 128 MiB plain/compressed streaming and installed-package checks. Scoped
   live functionality probes passed; nested slot predicates retained sibling quarters,
-  job-code results were empty, and numbers were not reconciled. No publication.
+  job-code results were empty, and numbers were not reconciled.
 
 - Add control daily totals with exactly one open/closed/union date, optional native
   integer RVC and shared filters/projections/input/delivery. All twelve daily-total
@@ -80,8 +96,7 @@
   installed-package checks and 128 MiB plain/compressed daily streaming coverage.
   Scoped functionality spot checks passed on all eleven routes, with representative
   filters/projections, JSON input, renewal, file delivery and API rejection handling.
-  Empty job-code data and numerical reconciliation remain unverified. No publication
-  is authorized.
+  Empty job-code data and numerical reconciliation remain unverified.
 
 - Implement seven POS-transaction read-only POST commands: guest checks, non-sales,
   journal logs, waste, check/line-item extensibility and SPI payments. Require explicit
@@ -94,7 +109,7 @@
   update notices across dimensions/transactions. Add schema, selector, error, package
   and 128 MiB plain/compressed transaction-stream tests. Authorized scoped live reads
   covered all seven endpoints; empty line-item extensibility leaves its populated-data
-  behavior unverified. No publication was performed.
+  behavior unverified.
 - Document live compatibility: offsetless UTC seconds/fractions accepted, trailing Z
   rejected by all four cursor endpoints, inclusive non-sales/waste cursor boundaries,
   and nested guest-check predicates retaining nonmatching sibling lines. Preserve
@@ -115,11 +130,11 @@
 - Add explicit `bi version --check` and daily update notices after successful
   non-quiet data calls. Use a 1-second automatic lookup timeout, stderr-only notices
   and isolated local scheduling; never install updates or change data output/exit codes.
-  Help/local/auth/dry-run commands stay offline; failures remain advisory. BI remains
-  private/unpublished and npm may report unavailable until publication is authorized.
+  Help/local/auth/dry-run commands stay offline; failures remain advisory. An unavailable
+  npm lookup is not proof the installed version is current.
 - Add offline tests for company migration/isolation, renewal/backoff/expiry, lock
   rechecks, full-registry recovery, pinned selection and update-notice behavior.
-  These changes do not authorize or claim new live BI testing or publication.
+  These changes do not authorize or claim new live BI testing.
 
 - Scaffold TypeScript/Node CLI with nine Oracle BI task areas and daily/quarter-hour
   aggregation subdivisions; seven areas remain planned after adding transactions.

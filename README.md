@@ -16,7 +16,7 @@ reads passed with empty data, leaving populated behavior unverified. Fiscal read
 KDS functionality checks returned orders at two of three scoped locations; suborders
 remain unverified. Labor time cards is offline-tested; scoped live metadata reads returned no time cards.
 Payment dimensions is offline-tested; live probes were permission-rejected (33108). Payment transactions is offline-tested, with no live calls yet. Implementation coverage is not full deployment validation.
-This package is private/unpublished. No STS configuration, credentials or token state are copied.
+This package is publicly available on npm. No STS configuration, credentials or token state are copied.
 
 ## Local setup
 
@@ -27,16 +27,21 @@ npm run test:package
 node bin/bi.js --help
 ```
 
+To install from npm:
+
+```sh
+npm install --global @muneris/bi-cli
+bi --help
+```
+
 To install this local checkout's `bi` command, build and pack it first:
 
 ```sh
 npm run build
 npm pack
-npm install --global ./muneris-bi-cli-0.1.0-dev.0.tgz
+npm install --global ./muneris-bi-cli-0.1.1.tgz
 bi --help
 ```
-
-There is no registry installation instruction until a release is explicitly approved.
 
 ## Authentication
 
@@ -100,9 +105,8 @@ codes remain unchanged. Failures stay silent, and no update installs automatical
 `--quiet` skips the check. Help/local/auth/dry-run commands do not check automatically.
 
 `bi version --check` performs an explicit advisory lookup with a 5-second timeout.
-BI remains private/unpublished: an unavailable npm lookup is not proof it is up to
-date. Review the installation method and ask before updating; this feature does not
-authorize publication or copy any STS credentials.
+An unavailable npm lookup is not proof BI is up to date. Review the installation
+method and ask before updating; this feature does not copy any STS credentials.
 
 ## Nine task areas
 

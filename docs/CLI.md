@@ -58,8 +58,8 @@ remove it only when no BI command is running.
 
 `bi version --check` bypasses this schedule with a 5-second lookup and reports
 installed/latest versions, availability and a version-pinned suggested npm command.
-Unavailable is not up to date. BI remains private/unpublished, so registry lookup may
-be unavailable. Preserve the installation method and get approval before updating.
+Unavailable is not up to date. Preserve the installation method and get approval
+before updating.
 No Oracle credentials, cookies or customer data are sent to npm.
 
 ## Coverage

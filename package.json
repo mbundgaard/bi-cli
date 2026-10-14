@@ -1,14 +1,26 @@
 {
   "name": "@muneris/bi-cli",
-  "version": "0.1.0-dev.0",
-  "private": true,
+  "version": "0.1.1",
   "description": "Oracle Simphony Business Intelligence CLI with company authentication and verbatim dimension, transaction, aggregation, cash-management, fiscal, KDS, labor, payment-dimension and payment-transaction queries",
   "type": "module",
   "license": "MIT",
   "author": "Muneris",
-  "bin": { "bi": "bin/bi.js" },
-  "files": ["bin/", "dist/", "README.md", "LICENSE", "CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md", "docs/"],
-  "engines": { "node": ">=22" },
+  "bin": {
+    "bi": "bin/bi.js"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "docs/"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "tsc",
     "test": "npm run build && node --test tests/*.test.mjs",
@@ -16,6 +28,30 @@
     "prepack": "npm run build",
     "start": "node bin/bi.js"
   },
-  "dependencies": { "commander": "^14.0.0", "tough-cookie": "^6.0.0" },
-  "devDependencies": { "@types/node": "^22.0.0", "typescript": "^5.9.0" }
+  "dependencies": {
+    "commander": "^14.0.0",
+    "tough-cookie": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mbundgaard/bi-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mbundgaard/bi-cli/issues"
+  },
+  "homepage": "https://github.com/mbundgaard/bi-cli#readme",
+  "keywords": [
+    "oracle",
+    "simphony",
+    "business-intelligence",
+    "cli",
+    "reporting"
+  ]
 }

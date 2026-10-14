@@ -50,13 +50,12 @@ node bin/bi.js --help
 - `tests/`: synthetic local mocks; the unpackaged runner injects an isolated StateStore.
 - `scripts/package-smoke.mjs`: package allowlist and actual installed shim checks.
 
-The npm package remains private/unpublished. Source is hosted at `mbundgaard/bi-cli`.
-GitHub repository visibility is independent of package.json's private flag; verify
-it separately before assuming source is private. No release, feedback service or
-publishing workflow is authorized by implementation work. Update lookup targets only the
-BI package on npm; unavailable is expected until a real release exists. CI configuration validates
-Windows/macOS/Linux with Node 22/24; that is not proof those remote jobs have run.
-Provider-owned catalog publication should follow STS once there is a real BI release.
+The npm package is configured for public scoped publication as `@muneris/bi-cli`.
+Source is hosted at `mbundgaard/bi-cli`; verify repository visibility separately before
+assuming source is private. Update lookup targets only this BI package on npm; an
+unavailable lookup is not proof the installed version is current. CI configuration
+validates Windows/macOS/Linux with Node 22/24; that is not proof those remote jobs have
+run. Provider-owned catalog publication should follow STS once there is a real BI release.
 
 ## BI-specific contracts
 

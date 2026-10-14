@@ -2,9 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, access, readdir } from 'node:fs/promises';
 import path from 'node:path';
-test('scaffold stays private and excludes test/runtime/private files from package allowlist', async () => {
+test('scaffold is publishable and excludes test/runtime/private files from package allowlist', async () => {
   const pkg = JSON.parse(await readFile('package.json', 'utf8'));
-  assert.equal(pkg.private, true); assert.equal(pkg.name, '@muneris/bi-cli'); assert.equal(pkg.bin.bi, 'bin/bi.js');
+  assert.equal(pkg.private, undefined); assert.equal(pkg.name, '@muneris/bi-cli'); assert.equal(pkg.bin.bi, 'bin/bi.js');
+  assert.equal(pkg.publishConfig.access, 'public'); assert.match(pkg.repository.url, /mbundgaard\/bi-cli/);
   assert.ok(!pkg.files.some(file => /tests|src|references|BiCli\.json|\.local/.test(file)));
 });
 test('local documentation links resolve', async () => {

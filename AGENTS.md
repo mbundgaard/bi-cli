@@ -96,7 +96,7 @@ CONTRIBUTING.md and docs/DEVELOPMENT.md before changing implementation.
 - Successful non-quiet data calls check npm at most once per 24h (1-second timeout),
   notifying only on stderr when newer. No automatic installs or data output/exit changes.
   Local/help/auth/dry-run commands stay offline. bi version --check forces a lookup;
-  unavailable does not mean current. BI remains private until separately authorized.
+  unavailable does not mean current. New releases require explicit publication authorization.
 - Do not commit, push, publish, create releases or delegate unless requested.
 - Never reuse STS credentials/tokens or invoke live BI calls without user authorization.
 - Location discovery requires explicit --all-locations when locRef is omitted.
