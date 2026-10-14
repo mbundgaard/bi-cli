@@ -12,6 +12,8 @@ establish data permissions. Do not share state with STS.
 Keep command help, docs and tests synchronized. Review package allowlists and actual
 installed shims before claiming packaging complete. Do not claim native cross-platform
 or live validation solely because CI is configured. Maintainers authorize commits,
-remote setup and publishing separately. The package is public on npm.
+remote setup and publishing separately. The package is public on npm. Stable GitHub
+releases trigger the trusted-publishing workflow; ordinary CI never publishes. See
+[release instructions](docs/DEVELOPMENT.md#releases).
 
 Contributions use the MIT license in LICENSE. Security contact: support@muneris.dk.

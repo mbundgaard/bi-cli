@@ -6,6 +6,11 @@
 
 ## 0.1.1 - 2026-10-14
 
+- Add the independent GitHub release pipeline: six platform/Node validation jobs,
+  stable tag/version and npm-availability gates, then npm trusted publishing with
+  provenance. Ordinary pushes do not publish; no long-lived npm tokens or sibling
+  repository dependencies are used.
+
 - Align authentication safety with the independently implemented STS/CC contract,
   without shared packages or cross-repository dependencies. Tighten callback
   port/fragment and token validation and sanitize cookie-jar failures.

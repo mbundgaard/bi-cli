@@ -57,6 +57,38 @@ unavailable lookup is not proof the installed version is current. CI configurati
 validates Windows/macOS/Linux with Node 22/24; that is not proof those remote jobs have
 run. Provider-owned catalog publication should follow STS once there is a real BI release.
 
+## Releases
+
+Ordinary CI does not publish. `.github/workflows/publish.yml` runs only when a stable
+GitHub release is published; commits, tags alone and draft releases do not publish.
+The workflow is maintained inside BI, with no STS/CC repository dependency.
+
+Configure the npm trusted publisher for `@muneris/bi-cli`:
+
+- Provider: GitHub Actions
+- Organization/user: `mbundgaard`
+- Repository: `bi-cli`
+- Workflow filename: `publish.yml`
+- Environment: leave blank
+
+No long-lived npm token is needed. The publishing job uses GitHub-hosted Ubuntu,
+Node 24, npm 11 and `id-token: write` for OIDC, with npm provenance enabled.
+
+1. Update package/lockfile versions and changelog, test and push the reviewed commit.
+2. Tag that commit `v<version>` and publish its stable GitHub release.
+3. The workflow runs tests and installed-package checks on Windows/macOS/Linux with
+   Node 22/24. All six jobs must pass before publication.
+4. `scripts/release-check.mjs` verifies the tag and package/lockfile versions, and
+   refuses an existing npm version or an inconclusive registry response. The publish
+   job builds, retests, packs and publishes that checkout using trusted publishing.
+5. Verify the workflow result, npm latest/version, provenance source commit and a
+   clean registry installation. Never infer publication from a pushed tag alone.
+
+If publication is uncertain, inspect npm before any rerun. Do not fall back to
+local publishing, move a released tag or republish an existing version. A missing
+trusted-publisher mapping must be fixed in npm settings before retrying the failed
+job; recheck version availability first. No live Oracle calls belong in releases.
+
 ## BI-specific contracts
 
 - Use `id_token`, not STS `access_token`; do not share state or infer cross-API permission.
